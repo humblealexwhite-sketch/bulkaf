@@ -1,0 +1,25 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+html, body {
+  background: #121110;
+  color: #F5F1EA;
+}
+
+h1, h2, h3 {
+  font-family: var(--font-oswald), sans-serif;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+}
+
+input, select {
+  background: #211E1B;
+  border: 1px solid #332E29;
+  color: #F5F1EA;
+}
+
+input:focus, select:focus {
+  outline: 2px solid #FF3D1A;
+  outline-offset: 1px;
+}
