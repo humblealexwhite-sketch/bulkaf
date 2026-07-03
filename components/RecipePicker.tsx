@@ -87,7 +87,7 @@ export default function RecipePicker({
         type="button"
         onClick={handleSave}
         disabled={loading || !recipeId}
-        className="w-full bg-accent text-[#171310] font-display font-semibold uppercase tracking-wide py-2 rounded-sm text-xs disabled:opacity-60"
+        className="w-full bg-accent text-white font-semibold uppercase tracking-wide py-2 rounded-sm text-xs disabled:opacity-60"
       >
         {loading ? "Speichern..." : "Übernehmen"}
       </button>

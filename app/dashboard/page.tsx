@@ -3,7 +3,7 @@ import { createClient } from "@/lib/supabase/server";
 import { bmiCategory, calcBMI, calcDailyTarget, calcProteinTarget, Profile } from "@/lib/calculations";
 import { MEAL_SLOTS, MealSlot, Recipe, isExpired, scaleRecipe } from "@/lib/mealPlan";
 import NutritionCard from "@/components/NutritionCard";
-import WeightCard from "@/components/WeightCard";
+import StatsHeader from "@/components/StatsHeader";
 import MealCard from "@/components/MealCard";
 import Link from "next/link";
 
@@ -81,23 +81,13 @@ export default async function DashboardPage() {
   const eatenProtein = (todaysLog ?? []).reduce((s, l) => s + Number(l.protein ?? 0), 0);
 
   return (
-    <div className="min-h-screen px-5 py-10">
-      <div className="max-w-xl mx-auto">
-        <div className="flex justify-between items-start mb-1">
-          <h1 className="text-3xl font-bold">
-            BULK<span className="text-accent">AF</span>
-          </h1>
-          <div className="flex items-center gap-4">
-            <Link href="/recipes" className="text-muted text-[11px] uppercase tracking-wide underline underline-offset-2">
-              Rezepte
-            </Link>
-            <SignOutButton />
-          </div>
-        </div>
-        <p className="text-muted text-xs uppercase tracking-widest mb-6">
-          Dreckig hoch. Kein Gemüse-Gerede.
-        </p>
+    <div className="min-h-screen">
+      <div className="w-full h-56 overflow-hidden">
+        <img src="/banner.png" alt="BulkAF Energy Ultra" className="w-full object-cover object-top" />
+      </div>
 
+      <div className="px-6 py-8">
+      <div className="max-w-md mx-auto">
         <NutritionCard
           calorieTarget={calorieTarget}
           calorieEaten={eatenKcal}
@@ -107,68 +97,64 @@ export default async function DashboardPage() {
           manualProteinTarget={profile.manual_protein_target}
         />
 
-        <WeightCard logs={weightLogs ?? []} startWeight={p.weight} goalWeight={p.goal_weight} />
+        <StatsHeader
+          bmi={bmi}
+          bmiTag={bmiCategory(bmi)}
+          startWeight={p.weight}
+          latestWeight={latestWeight}
+          goalWeight={p.goal_weight}
+          daysLeft={days}
+        />
 
-        {/* BMI */}
-        <div className="bg-panel border border-line rounded-sm p-4 mb-4">
-          <div className="font-display font-bold text-2xl text-accent2">{bmi.toFixed(1)}</div>
-          <div className="text-[11px] text-muted uppercase tracking-wide mt-1.5">
-            BMI · Erhaltung {Math.round(tdee)} kcal · Ziel {p.goal_weight}kg in {days} Tagen
-          </div>
-          <div className="inline-block mt-2.5 bg-accent text-[#171310] font-display font-bold uppercase text-xs px-2.5 py-1 rounded-sm">
-            {bmiCategory(bmi)}
-          </div>
+        <div className="border-t border-line pt-4">
+          <div className="text-muted text-xs uppercase tracking-widest mb-3">Heutige Mahlzeiten</div>
+
+          {MEAL_SLOTS.map((slotDef, i) => {
+            const recipesForSlot = allRecipes.filter((r) => r.meal_type === slotDef.key);
+            const plan = (activePlans ?? []).find((pl) => pl.meal_slot === slotDef.key);
+            const expired = plan ? isExpired(plan.planned_until) : false;
+
+            let activeRecipe: Recipe | undefined;
+            if (plan && !expired) {
+              activeRecipe = recipesForSlot.find((r) => r.id === plan.recipe_id);
+            }
+            if (!activeRecipe) {
+              activeRecipe = recipesForSlot.find((r) => r.user_id === null) ?? recipesForSlot[0];
+            }
+
+            const meal = activeRecipe ? scaleRecipe(activeRecipe, calorieTarget * slotDef.pct) : null;
+
+            return (
+              <MealCard
+                key={slotDef.key}
+                slot={slotDef.key}
+                label={slotDef.label}
+                meal={meal}
+                eaten={eatenSlots.has(slotDef.key)}
+                mealPrep={slotDef.mealPrep}
+                activeUntil={plan && !expired ? plan.planned_until : null}
+                expired={!!plan && expired}
+                recipeOptions={recipesForSlot.map((r) => ({ id: r.id, name: r.name }))}
+                isLast={i === MEAL_SLOTS.length - 1}
+              />
+            );
+          })}
         </div>
 
-        <div className="text-muted text-[13px] tracking-widest uppercase mt-8 mb-3">
-          Tagesplan — meal-prep-fähig
-        </div>
-
-        {MEAL_SLOTS.map((slotDef) => {
-          const recipesForSlot = allRecipes.filter((r) => r.meal_type === slotDef.key);
-          const plan = (activePlans ?? []).find((pl) => pl.meal_slot === slotDef.key);
-          const expired = plan ? isExpired(plan.planned_until) : false;
-
-          let activeRecipe: Recipe | undefined;
-          if (plan && !expired) {
-            activeRecipe = recipesForSlot.find((r) => r.id === plan.recipe_id);
-          }
-          if (!activeRecipe) {
-            // Fallback: globales Standard-Rezept (oder erstes verfügbares) für diesen Slot
-            activeRecipe =
-              recipesForSlot.find((r) => r.user_id === null) ?? recipesForSlot[0];
-          }
-
-          const meal = activeRecipe ? scaleRecipe(activeRecipe, calorieTarget * slotDef.pct) : null;
-
-          return (
-            <MealCard
-              key={slotDef.key}
-              slot={slotDef.key}
-              label={slotDef.label}
-              meal={meal}
-              eaten={eatenSlots.has(slotDef.key)}
-              mealPrep={slotDef.mealPrep}
-              activeUntil={plan && !expired ? plan.planned_until : null}
-              expired={!!plan && expired}
-              recipeOptions={recipesForSlot.map((r) => ({ id: r.id, name: r.name }))}
-            />
-          );
-        })}
-
-        <p className="text-muted text-[11px] mt-6 leading-relaxed">
-          Standard-Rezepte sind Platzhalter. Unter{" "}
+        <div className="text-center mt-8 text-muted text-[11px]">
           <Link href="/recipes" className="underline underline-offset-2">
             Rezepte verwalten
-          </Link>{" "}
-          kannst du eigene Nahrungsmittel und Rezepte anlegen.
-        </p>
+          </Link>
+          <span className="mx-2">·</span>
+          <SignOutLink />
+        </div>
+      </div>
       </div>
     </div>
   );
 }
 
-function SignOutButton() {
+function SignOutLink() {
   async function signOut() {
     "use server";
     const supabase = createClient();
@@ -176,10 +162,8 @@ function SignOutButton() {
     redirect("/login");
   }
   return (
-    <form action={signOut}>
-      <button className="text-muted text-[11px] uppercase tracking-wide underline underline-offset-2">
-        Logout
-      </button>
+    <form action={signOut} className="inline">
+      <button className="underline underline-offset-2">Logout</button>
     </form>
   );
 }

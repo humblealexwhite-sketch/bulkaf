@@ -181,7 +181,7 @@ export default function SetupPage() {
           <button
             type="submit"
             disabled={loading}
-            className="w-full bg-accent text-white font-semibold uppercase tracking-wide py-3 rounded-sm text-sm disabled:opacity-60"
+            className="w-full bg-accent text-white font-display font-semibold uppercase tracking-wide py-3 rounded-sm text-sm disabled:opacity-60"
           >
             {loading ? "Speichern..." : "Los geht's"}
           </button>

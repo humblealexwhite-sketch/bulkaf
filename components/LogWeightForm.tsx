@@ -21,7 +21,12 @@ export default function LogWeightForm() {
     } = await supabase.auth.getUser();
     if (!user) return;
 
-    await supabase.from("weight_logs").insert({ user_id: user.id, weight });
+    await supabase
+      .from("weight_logs")
+      .upsert(
+        { user_id: user.id, log_date: new Date().toISOString().slice(0, 10), weight },
+        { onConflict: "user_id,log_date" }
+      );
     setValue("");
     setLoading(false);
     router.refresh();
@@ -40,7 +45,7 @@ export default function LogWeightForm() {
       <button
         type="submit"
         disabled={loading}
-        className="border border-line text-muted hover:text-text hover:border-muted px-3 py-2 rounded-sm text-xs uppercase tracking-wide font-display"
+        className="border border-line text-muted hover:text-text hover:border-muted px-3 py-2 rounded-sm text-xs uppercase tracking-wide"
       >
         Eintragen
       </button>

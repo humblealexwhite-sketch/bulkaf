@@ -26,8 +26,8 @@ export default async function RecipesPage() {
   const recipes = recipesRaw ?? [];
 
   return (
-    <div className="min-h-screen px-5 py-10">
-      <div className="max-w-xl mx-auto">
+    <div className="min-h-screen px-6 py-8">
+      <div className="max-w-md mx-auto">
         <div className="flex justify-between items-start mb-1">
           <h1 className="text-3xl font-bold">
             BULK<span className="text-accent">AF</span>
@@ -38,55 +38,62 @@ export default async function RecipesPage() {
         </div>
         <p className="text-muted text-xs uppercase tracking-widest mb-8">Rezepte & Nahrungsmittel</p>
 
-        {/* Recipes by meal type */}
-        {MEAL_SLOTS.map((slot) => {
+        {MEAL_SLOTS.map((slot, slotIdx) => {
           const slotRecipes = recipes.filter((r: any) => r.meal_type === slot.key);
           return (
             <div key={slot.key} className="mb-6">
-              <div className="text-muted text-[13px] tracking-widest uppercase mb-2">{slot.label}</div>
+              <div className="text-muted text-xs uppercase tracking-widest mb-2">{slot.label}</div>
               {slotRecipes.length === 0 && (
-                <p className="text-muted text-sm mb-2">Noch keine Rezepte.</p>
+                <p className="text-muted text-sm py-2">Noch keine Rezepte.</p>
               )}
-              {slotRecipes.map((r: any) => (
-                <div key={r.id} className="bg-panel border border-line rounded-sm p-4 mb-2">
-                  <div className="flex justify-between items-baseline">
-                    <span className="font-display font-bold">{r.name}</span>
+              {slotRecipes.map((r: any, i: number) => (
+                <div key={r.id}>
+                  <div className="flex justify-between items-baseline py-3">
+                    <div>
+                      <div className="font-semibold text-[15px]">{r.name}</div>
+                      <div className="text-muted text-xs mt-0.5">
+                        {(r.recipe_items ?? []).map((it: any) => it.foods?.name).join(", ")}
+                      </div>
+                    </div>
                     {r.user_id === null && (
-                      <span className="text-muted text-[10px] uppercase">Standard</span>
+                      <span className="text-muted text-[10px] uppercase shrink-0 ml-3">Standard</span>
                     )}
                   </div>
-                  <div className="text-muted text-xs mt-1">
-                    {(r.recipe_items ?? []).map((it: any) => it.foods?.name).join(", ")}
-                  </div>
+                  {i < slotRecipes.length - 1 && <div className="border-t border-line" />}
                 </div>
               ))}
+              {slotIdx < MEAL_SLOTS.length - 1 && <div className="border-t border-line mt-3" />}
             </div>
           );
         })}
 
-        <div className="mb-10">
+        <div className="mb-10 pt-2">
           <CreateRecipeForm
             foods={(foods ?? []).map((f) => ({ id: f.id, name: f.name, unit: f.unit }))}
           />
         </div>
 
-        {/* Foods list */}
-        <div className="text-muted text-[13px] tracking-widest uppercase mb-3">Nahrungsmittel</div>
-        <div className="bg-panel border border-line rounded-sm p-4 mb-4">
-          {(foods ?? []).map((f) => (
-            <div key={f.id} className="flex justify-between py-2 text-[13px] border-b border-line last:border-none">
-              <span>
-                {f.name} {f.user_id !== null && <span className="text-muted">(eigenes)</span>}
-              </span>
-              <span className="text-muted">
-                {f.kcal} kcal / 100{f.unit} · P{f.protein} C{f.carbs} F{f.fat}
-                {f.price != null && ` · ${f.price.toFixed(2)}€ ${f.price_note ?? ""}`}
-              </span>
+        <div className="border-t border-line pt-4">
+          <div className="text-muted text-xs uppercase tracking-widest mb-3">Nahrungsmittel</div>
+          {(foods ?? []).map((f, i) => (
+            <div key={f.id}>
+              <div className="flex justify-between py-2.5 text-[13px]">
+                <span>
+                  {f.name} {f.user_id !== null && <span className="text-muted">(eigenes)</span>}
+                </span>
+                <span className="text-muted text-right">
+                  {f.kcal} kcal / 100{f.unit} · P{f.protein} C{f.carbs} F{f.fat}
+                  {f.price != null && ` · ${f.price.toFixed(2)}€ ${f.price_note ?? ""}`}
+                </span>
+              </div>
+              {i < (foods?.length ?? 0) - 1 && <div className="border-t border-line" />}
             </div>
           ))}
         </div>
 
-        <CreateFoodForm />
+        <div className="pt-4">
+          <CreateFoodForm />
+        </div>
       </div>
     </div>
   );

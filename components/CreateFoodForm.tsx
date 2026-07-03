@@ -105,7 +105,7 @@ export default function CreateFoodForm() {
       </div>
       {error && <p className="text-accent text-xs">{error}</p>}
       <div className="flex gap-2">
-        <button type="submit" disabled={loading} className="bg-accent text-[#171310] font-display font-semibold uppercase tracking-wide py-2 px-4 rounded-sm text-xs disabled:opacity-60">
+        <button type="submit" disabled={loading} className="bg-accent text-white font-semibold uppercase tracking-wide py-2 px-4 rounded-sm text-xs disabled:opacity-60">
           {loading ? "Speichern..." : "Speichern"}
         </button>
         <button type="button" onClick={() => setOpen(false)} className="text-muted text-xs uppercase tracking-wide">
