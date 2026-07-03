@@ -28,7 +28,8 @@ export async function middleware(request: NextRequest) {
 
   const isProtected =
     request.nextUrl.pathname.startsWith("/dashboard") ||
-    request.nextUrl.pathname.startsWith("/setup");
+    request.nextUrl.pathname.startsWith("/setup") ||
+    request.nextUrl.pathname.startsWith("/recipes");
 
   if (isProtected && !user) {
     const url = request.nextUrl.clone();
@@ -40,5 +41,5 @@ export async function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/dashboard/:path*", "/setup/:path*"],
+  matcher: ["/dashboard/:path*", "/setup/:path*", "/recipes/:path*"],
 };

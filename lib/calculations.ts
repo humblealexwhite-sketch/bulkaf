@@ -42,6 +42,11 @@ export function calcDailyTarget(p: Profile) {
   return { tdee, target: Math.max(target, tdee), days, totalGainKg };
 }
 
+export function calcProteinTarget(currentWeightKg: number): number {
+  // ~2g Protein pro kg Körpergewicht — Standard-Richtwert für Muskelaufbau/Bulk
+  return Math.round(currentWeightKg * 2);
+}
+
 export type ScaledIngredient = {
   name: string;
   grams: number;

@@ -1,16 +1,11 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
-import {
-  bmiCategory,
-  calcBMI,
-  calcDailyTarget,
-  scaleAllMeals,
-  Profile,
-} from "@/lib/calculations";
-import { PRODUCTS } from "@/lib/products";
-import GaugeRing from "@/components/GaugeRing";
+import { bmiCategory, calcBMI, calcDailyTarget, calcProteinTarget, Profile } from "@/lib/calculations";
+import { MEAL_SLOTS, MealSlot, Recipe, isExpired, scaleRecipe } from "@/lib/mealPlan";
+import NutritionCard from "@/components/NutritionCard";
+import WeightCard from "@/components/WeightCard";
 import MealCard from "@/components/MealCard";
-import LogWeightForm from "@/components/LogWeightForm";
+import Link from "next/link";
 
 export default async function DashboardPage() {
   const supabase = createClient();
@@ -28,7 +23,7 @@ export default async function DashboardPage() {
 
   if (!profile) redirect("/setup");
 
-  const { data: logs } = await supabase
+  const { data: weightLogs } = await supabase
     .from("weight_logs")
     .select("weight, log_date")
     .eq("user_id", user.id)
@@ -44,21 +39,46 @@ export default async function DashboardPage() {
     activity: profile.activity,
   };
 
-  const latestWeight = logs && logs.length ? logs[logs.length - 1].weight : p.weight;
+  const latestWeight =
+    weightLogs && weightLogs.length ? weightLogs[weightLogs.length - 1].weight : p.weight;
   const bmi = calcBMI(latestWeight, p.height);
-  const { tdee, target, days, totalGainKg } = calcDailyTarget(p);
-  const meals = scaleAllMeals(target);
+  const { tdee, target: calcCalorieTarget, days } = calcDailyTarget(p);
+  const calcProteinGoal = calcProteinTarget(latestWeight);
 
-  const totalDelta = p.goal_weight - p.weight;
-  const currentDelta = latestWeight - p.weight;
-  const pct = totalDelta !== 0 ? currentDelta / totalDelta : 0;
+  const calorieTarget = profile.manual_calorie_target ?? calcCalorieTarget;
+  const proteinTarget = profile.manual_protein_target ?? calcProteinGoal;
 
-  async function signOut() {
-    "use server";
-    const supabase = createClient();
-    await supabase.auth.signOut();
-    redirect("/login");
-  }
+  // Rezepte laden (global + eigene), inkl. Zutaten
+  const { data: recipesRaw } = await supabase
+    .from("recipes")
+    .select(
+      "id, name, meal_type, user_id, recipe_items(amount, foods(id, name, unit, kcal, protein, carbs, fat, price, price_note))"
+    )
+    .or(`user_id.is.null,user_id.eq.${user.id}`);
+
+  const allRecipes: Recipe[] = (recipesRaw ?? []).map((r: any) => ({
+    id: r.id,
+    name: r.name,
+    meal_type: r.meal_type,
+    user_id: r.user_id,
+    items: (r.recipe_items ?? []).map((it: any) => ({ amount: it.amount, food: it.foods })),
+  }));
+
+  const { data: activePlans } = await supabase
+    .from("active_meal_plan")
+    .select("*")
+    .eq("user_id", user.id);
+
+  const today = new Date().toISOString().slice(0, 10);
+  const { data: todaysLog } = await supabase
+    .from("meal_log")
+    .select("meal_slot, kcal, protein")
+    .eq("user_id", user.id)
+    .eq("log_date", today);
+
+  const eatenSlots = new Set((todaysLog ?? []).map((l) => l.meal_slot));
+  const eatenKcal = (todaysLog ?? []).reduce((s, l) => s + Number(l.kcal), 0);
+  const eatenProtein = (todaysLog ?? []).reduce((s, l) => s + Number(l.protein ?? 0), 0);
 
   return (
     <div className="min-h-screen px-5 py-10">
@@ -67,86 +87,99 @@ export default async function DashboardPage() {
           <h1 className="text-3xl font-bold">
             BULK<span className="text-accent">AF</span>
           </h1>
-          <form action={signOut}>
-            <button className="text-muted text-[11px] uppercase tracking-wide underline underline-offset-2">
-              Logout
-            </button>
-          </form>
+          <div className="flex items-center gap-4">
+            <Link href="/recipes" className="text-muted text-[11px] uppercase tracking-wide underline underline-offset-2">
+              Rezepte
+            </Link>
+            <SignOutButton />
+          </div>
         </div>
         <p className="text-muted text-xs uppercase tracking-widest mb-6">
           Dreckig hoch. Kein Gemüse-Gerede.
         </p>
 
-        {/* Gauge */}
-        <div className="bg-panel border border-line rounded-sm p-5 mb-4 flex items-center gap-5">
-          <GaugeRing pct={pct} />
-          <div className="flex-1">
-            <div className="font-display font-bold text-lg">
-              {latestWeight.toFixed(1)} kg von {p.weight}kg → {p.goal_weight}kg
-            </div>
-            <div className="text-muted text-xs mt-1">
-              {totalGainKg > 0
-                ? `Noch ${(p.goal_weight - latestWeight).toFixed(1)}kg bis zum Ziel`
-                : "Zielgewicht erreicht oder Zielrichtung geändert"}
-            </div>
-            <LogWeightForm />
-          </div>
-        </div>
+        <NutritionCard
+          calorieTarget={calorieTarget}
+          calorieEaten={eatenKcal}
+          proteinTarget={proteinTarget}
+          proteinEaten={eatenProtein}
+          manualCalorieTarget={profile.manual_calorie_target}
+          manualProteinTarget={profile.manual_protein_target}
+        />
 
-        {/* Stats */}
-        <div className="grid grid-cols-2 gap-3.5 mb-4">
-          <div className="bg-panel border border-line rounded-sm p-4">
-            <div className="font-display font-bold text-2xl text-accent2">{bmi.toFixed(1)}</div>
-            <div className="text-[11px] text-muted uppercase tracking-wide mt-1.5">BMI</div>
-            <div className="inline-block mt-2.5 bg-accent text-[#171310] font-display font-bold uppercase text-xs px-2.5 py-1 rounded-sm">
-              {bmiCategory(bmi)}
-            </div>
+        <WeightCard logs={weightLogs ?? []} startWeight={p.weight} goalWeight={p.goal_weight} />
+
+        {/* BMI */}
+        <div className="bg-panel border border-line rounded-sm p-4 mb-4">
+          <div className="font-display font-bold text-2xl text-accent2">{bmi.toFixed(1)}</div>
+          <div className="text-[11px] text-muted uppercase tracking-wide mt-1.5">
+            BMI · Erhaltung {Math.round(tdee)} kcal · Ziel {p.goal_weight}kg in {days} Tagen
           </div>
-          <div className="bg-panel border border-line rounded-sm p-4">
-            <div className="font-display font-bold text-2xl text-accent2">
-              {Math.round(target)}
-            </div>
-            <div className="text-[11px] text-muted uppercase tracking-wide mt-1.5">
-              Kalorienziel / Tag
-            </div>
-            <div className="text-muted text-[11px] mt-2">
-              Erhaltung: {Math.round(tdee)} kcal · Ziel: {p.goal_weight}kg in {days} Tagen
-            </div>
+          <div className="inline-block mt-2.5 bg-accent text-[#171310] font-display font-bold uppercase text-xs px-2.5 py-1 rounded-sm">
+            {bmiCategory(bmi)}
           </div>
         </div>
 
         <div className="text-muted text-[13px] tracking-widest uppercase mt-8 mb-3">
-          Tagesplan — 4 Mahlzeiten, dreckig kalkuliert
+          Tagesplan — meal-prep-fähig
         </div>
 
-        {meals.map((meal) => (
-          <MealCard key={meal.key} meal={meal} />
-        ))}
+        {MEAL_SLOTS.map((slotDef) => {
+          const recipesForSlot = allRecipes.filter((r) => r.meal_type === slotDef.key);
+          const plan = (activePlans ?? []).find((pl) => pl.meal_slot === slotDef.key);
+          const expired = plan ? isExpired(plan.planned_until) : false;
 
-        <details className="mt-2">
-          <summary className="cursor-pointer text-muted text-xs uppercase tracking-wide">
-            Produktdatenbank anzeigen
-          </summary>
-          <div className="bg-panel border border-line rounded-sm p-4 mt-2.5">
-            {Object.values(PRODUCTS).map((prod, i) => (
-              <div
-                key={i}
-                className="flex justify-between py-2 text-[13px] border-b border-line last:border-none"
-              >
-                <span>{prod.name}</span>
-                <span className="text-muted">
-                  {prod.kcal} kcal / 100{prod.unit} · P{prod.p} C{prod.c} F{prod.f}
-                </span>
-              </div>
-            ))}
-          </div>
-        </details>
+          let activeRecipe: Recipe | undefined;
+          if (plan && !expired) {
+            activeRecipe = recipesForSlot.find((r) => r.id === plan.recipe_id);
+          }
+          if (!activeRecipe) {
+            // Fallback: globales Standard-Rezept (oder erstes verfügbares) für diesen Slot
+            activeRecipe =
+              recipesForSlot.find((r) => r.user_id === null) ?? recipesForSlot[0];
+          }
+
+          const meal = activeRecipe ? scaleRecipe(activeRecipe, calorieTarget * slotDef.pct) : null;
+
+          return (
+            <MealCard
+              key={slotDef.key}
+              slot={slotDef.key}
+              label={slotDef.label}
+              meal={meal}
+              eaten={eatenSlots.has(slotDef.key)}
+              mealPrep={slotDef.mealPrep}
+              activeUntil={plan && !expired ? plan.planned_until : null}
+              expired={!!plan && expired}
+              recipeOptions={recipesForSlot.map((r) => ({ id: r.id, name: r.name }))}
+            />
+          );
+        })}
 
         <p className="text-muted text-[11px] mt-6 leading-relaxed">
-          BMI-Sprüche und Produktdatenbank sind Platzhalter-Schätzungen. Update die Werte in{" "}
-          <code>lib/products.ts</code>, sobald deine echte Liste steht.
+          Standard-Rezepte sind Platzhalter. Unter{" "}
+          <Link href="/recipes" className="underline underline-offset-2">
+            Rezepte verwalten
+          </Link>{" "}
+          kannst du eigene Nahrungsmittel und Rezepte anlegen.
         </p>
       </div>
     </div>
+  );
+}
+
+function SignOutButton() {
+  async function signOut() {
+    "use server";
+    const supabase = createClient();
+    await supabase.auth.signOut();
+    redirect("/login");
+  }
+  return (
+    <form action={signOut}>
+      <button className="text-muted text-[11px] uppercase tracking-wide underline underline-offset-2">
+        Logout
+      </button>
+    </form>
   );
 }
