@@ -43,60 +43,63 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center px-5">
-      <div className="w-full max-w-sm">
-        <div className="mb-1 flex items-baseline gap-2">
-          <h1 className="text-4xl font-bold">
-            BULK<span className="text-accent">AF</span>
-          </h1>
-        </div>
-        <p className="text-muted text-xs uppercase tracking-widest mb-8">
+    <div className="min-h-screen bg-bg overflow-x-hidden flex flex-col">
+      {/* Logo + Tagline */}
+      <div className="px-6 pt-12 text-center">
+        <h1 className="text-4xl font-bold">
+          BULK<span className="text-accent">AF</span>
+        </h1>
+        <p className="text-accent text-sm font-bold uppercase tracking-widest mt-1">
           Kalorien ohne Kompromisse.
         </p>
+      </div>
 
-        <form
-          onSubmit={handleSubmit}
-          className="card-glass rounded-lg p-6 space-y-4"
-        >
-          <h2 className="text-sm text-muted tracking-widest">
-            {mode === "login" ? "Login" : "Account erstellen"}
-          </h2>
+      {/* Eingabefelder — untereinander, umrandet statt gefüllt */}
+      <form onSubmit={handleSubmit} className="px-6 mt-8">
+        <div className="max-w-sm mx-auto space-y-3">
+          <input
+            type="email"
+            required
+            placeholder="E-Mail"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            className="w-full text-center bg-transparent border border-white/25 px-4 py-3 rounded-md text-sm placeholder:text-muted"
+          />
+          <input
+            type="password"
+            required
+            minLength={6}
+            placeholder="Passwort"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            className="w-full text-center bg-transparent border border-white/25 px-4 py-3 rounded-md text-sm placeholder:text-muted"
+          />
 
-          <div>
-            <label className="block text-xs text-muted uppercase tracking-wide mb-1">
-              E-Mail
-            </label>
-            <input
-              type="email"
-              required
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              className="w-full px-3 py-2 rounded-sm text-sm"
-            />
-          </div>
-          <div>
-            <label className="block text-xs text-muted uppercase tracking-wide mb-1">
-              Passwort
-            </label>
-            <input
-              type="password"
-              required
-              minLength={6}
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              className="w-full px-3 py-2 rounded-sm text-sm"
-            />
-          </div>
+          {error && <p className="text-accent text-xs text-center">{error}</p>}
+          {info && <p className="text-ok text-xs text-center">{info}</p>}
+        </div>
 
-          {error && <p className="text-accent text-xs">{error}</p>}
-          {info && <p className="text-ok text-xs">{info}</p>}
+        {/* Bulle — bricht bewusst aus der schmalen Spalte aus, volle Bildschirmbreite */}
+        <div className="relative left-1/2 right-1/2 -mx-[50vw] w-screen -my-6 pointer-events-none">
+          <img
+            src="/login-bull.png"
+            alt="BulkAF Bulle"
+            className="h-72 sm:h-80 w-auto mx-auto object-contain"
+          />
+        </div>
 
+        {/* Untere Karte: Button + Umschalten */}
+        <div className="max-w-sm mx-auto card-glass rounded-lg p-5 text-center relative z-10">
           <button
             type="submit"
             disabled={loading}
-            className="w-full bg-accent text-white font-semibold uppercase tracking-wide py-3 rounded-sm text-sm disabled:opacity-60"
+            className="w-full bg-accent text-white font-bold uppercase tracking-wide py-3 rounded-md text-sm disabled:opacity-60"
           >
-            {loading ? "Moment..." : mode === "login" ? "Einloggen" : "Account erstellen"}
+            {loading
+              ? "Moment..."
+              : mode === "login"
+              ? "Einloggen"
+              : "Jetzt registrieren"}
           </button>
 
           <button
@@ -106,12 +109,20 @@ export default function LoginPage() {
               setError(null);
               setInfo(null);
             }}
-            className="w-full text-muted text-xs uppercase tracking-wide underline underline-offset-2"
+            className="text-muted text-xs mt-3"
           >
-            {mode === "login" ? "Noch keinen Account? Registrieren" : "Schon einen Account? Einloggen"}
+            {mode === "login" ? (
+              <>
+                Noch keinen Account? <span className="underline underline-offset-2">Registrieren</span>
+              </>
+            ) : (
+              <>
+                Hast du schon einen Account? <span className="underline underline-offset-2">Einloggen</span>
+              </>
+            )}
           </button>
-        </form>
-      </div>
+        </div>
+      </form>
     </div>
   );
 }
