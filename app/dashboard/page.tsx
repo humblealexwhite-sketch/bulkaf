@@ -1,6 +1,6 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
-import { bmiCategory, calcBMI, calcDailyTarget, calcProteinTarget, Profile } from "@/lib/calculations";
+import { calcDailyTarget, calcProteinTarget, Profile } from "@/lib/calculations";
 import { MEAL_SLOTS, MealSlot, Recipe, getMealPct, isExpired, scaleRecipe } from "@/lib/mealPlan";
 import NutritionCard from "@/components/NutritionCard";
 import StatsHeader from "@/components/StatsHeader";
@@ -41,7 +41,6 @@ export default async function DashboardPage() {
 
   const latestWeight =
     weightLogs && weightLogs.length ? weightLogs[weightLogs.length - 1].weight : p.weight;
-  const bmi = calcBMI(latestWeight, p.height);
   const { tdee, target: calcCalorieTarget, days } = calcDailyTarget(p);
   const calcProteinGoal = calcProteinTarget(latestWeight);
 
@@ -81,12 +80,13 @@ export default async function DashboardPage() {
   const eatenProtein = (todaysLog ?? []).reduce((s, l) => s + Number(l.protein ?? 0), 0);
 
   return (
-    <div className="min-h-screen">
-      <div className="w-full h-56 overflow-hidden">
-        <img src="/banner.png" alt="BulkAF Energy Ultra" className="w-full object-cover object-top" />
+    <div className="min-h-screen bg-bg">
+      <div className="relative w-full h-[440px] overflow-hidden">
+        <img src="/hero-bull.png" alt="BulkAF" className="absolute inset-0 w-full h-full object-cover object-top" />
+        <div className="absolute inset-x-0 bottom-0 h-56 bg-gradient-to-b from-transparent to-bg" />
       </div>
 
-      <div className="px-6 py-8">
+      <div className="px-6 -mt-24 relative z-10 pb-8">
       <div className="max-w-md mx-auto">
         <NutritionCard
           calorieTarget={calorieTarget}
@@ -98,8 +98,6 @@ export default async function DashboardPage() {
         />
 
         <StatsHeader
-          bmi={bmi}
-          bmiTag={bmiCategory(bmi)}
           startWeight={p.weight}
           latestWeight={latestWeight}
           goalWeight={p.goal_weight}

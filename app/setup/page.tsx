@@ -74,7 +74,7 @@ export default function SetupPage() {
 
         <form
           onSubmit={handleSubmit}
-          className="bg-panel border border-line rounded-sm p-6 space-y-4"
+          className="card-glass rounded-lg p-6 space-y-4"
         >
           <div className="grid grid-cols-2 gap-4">
             <div>

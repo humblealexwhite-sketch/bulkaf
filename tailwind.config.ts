@@ -8,13 +8,13 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        bg: "#FBFBFC",
-        panel: "#FFFFFF",
-        panel2: "#EEF0F3",
-        line: "#E8EAEE",
+        bg: "#0A0A0B",
+        panel: "#141416",
+        panel2: "#1C1C1F",
+        line: "rgba(255,255,255,0.08)",
         accent: "#2E93E0",
-        accent2: "#14181F",
-        text: "#14181F",
+        accent2: "#FFFFFF",
+        text: "#F5F6F8",
         muted: "#9AA2B1",
         ok: "#22A559",
         warn: "#E24B4A",

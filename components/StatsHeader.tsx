@@ -5,15 +5,11 @@ import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 
 export default function StatsHeader({
-  bmi,
-  bmiTag,
   startWeight,
   latestWeight,
   goalWeight,
   daysLeft,
 }: {
-  bmi: number;
-  bmiTag: string;
   startWeight: number;
   latestWeight: number;
   goalWeight: number;
@@ -28,8 +24,8 @@ export default function StatsHeader({
   const totalDelta = goalWeight - startWeight;
   const currentDelta = latestWeight - startWeight;
   const pct = totalDelta !== 0 ? Math.max(0, Math.min(1, currentDelta / totalDelta)) : 0;
-  const segments = 10;
-  const filledSegments = Math.round(pct * segments);
+  const segments = 8;
+  const filledSegments = Math.max(pct > 0 ? 1 : 0, Math.round(pct * segments));
 
   async function handleSave(e: React.FormEvent) {
     e.preventDefault();
@@ -55,65 +51,37 @@ export default function StatsHeader({
   }
 
   return (
-    <div className="py-5 border-t border-line">
-      {/* Row 1: BMI-Tag / großes Gewicht + Update / Tage übrig */}
-      <div className="grid grid-cols-3 gap-2 items-center mb-4">
-        <div className="bg-accent text-white text-xs font-bold uppercase tracking-wide rounded-md py-3 px-2 text-center">
-          {bmiTag}
+    <div>
+      {/* Gewicht — kein Kasten */}
+      <div className="text-center py-6">
+        <div className="font-display text-[56px] font-bold leading-none text-shadow-soft">
+          {latestWeight.toFixed(1)}
+          <span className="font-body text-xl font-normal text-accent">.kg</span>
         </div>
-        <div className="text-center">
-          <div className="font-display text-[48px] font-bold leading-none">
-            {latestWeight.toFixed(1)}
-            <span className="font-body text-base font-normal text-text"> kg</span>
-          </div>
-          <div className="text-muted text-[10px] uppercase tracking-wide mt-1 mb-2">Aktuelles Gewicht</div>
-          <button
-            type="button"
-            onClick={() => setShowUpdate((v) => !v)}
-            className="bg-accent text-white text-[11px] font-bold uppercase tracking-wide rounded-md py-1.5 px-4"
-          >
-            Update
-          </button>
+        <div className="text-muted text-[11px] uppercase tracking-wide mt-1 text-shadow-soft">
+          Aktuelles Gewicht
         </div>
-        <div className="bg-accent text-white text-xs font-bold uppercase tracking-wide rounded-md py-3 px-2 text-center">
-          {daysLeft} Days Left
-        </div>
-      </div>
 
-      {/* Fortschrittsbalken volle Breite */}
-      <div className="flex gap-[3px] mb-4">
-        {Array.from({ length: segments }).map((_, i) => (
-          <span
-            key={i}
-            className={`flex-1 h-2 rounded-sm ${i < filledSegments ? "bg-accent" : "bg-panel2"}`}
-          />
-        ))}
-      </div>
+        <div className="flex justify-center gap-[4px] mt-4 max-w-[280px] mx-auto">
+          {Array.from({ length: segments }).map((_, i) => (
+            <span
+              key={i}
+              className={`flex-1 h-1.5 rounded-full ${i < filledSegments ? "bg-accent" : "bg-white/15"}`}
+            />
+          ))}
+        </div>
 
-      {/* Row 2: verbleibend / BMI / Ziel — alle gleiche Größe, gleiche Höhe */}
-      <div className="grid grid-cols-3 gap-2 items-start">
-        <div className="text-center py-1">
-          <div className="font-display text-xl">
-            {Math.max(0, goalWeight - latestWeight).toFixed(1)}
-            <span className="font-body text-xs text-text"> kg</span>
-          </div>
-          <div className="text-muted text-[10px] uppercase">left</div>
-        </div>
-        <div className="bg-panel2 rounded-md py-1 text-center">
-          <div className="font-display text-xl">{bmi.toFixed(1).replace(".", ",")}</div>
-          <div className="text-muted text-[10px] uppercase tracking-wide">BMI</div>
-        </div>
-        <div className="text-center py-1">
-          <div className="font-display text-xl">
-            {goalWeight}
-            <span className="font-body text-xs text-text"> kg</span>
-          </div>
-          <div className="text-muted text-[10px] uppercase">goal</div>
-        </div>
+        <button
+          type="button"
+          onClick={() => setShowUpdate((v) => !v)}
+          className="bg-accent text-white text-[11px] font-bold uppercase tracking-wide rounded-md py-1.5 px-5 mt-4"
+        >
+          Update
+        </button>
       </div>
 
       {showUpdate && (
-        <form onSubmit={handleSave} className="border-t border-line pt-4 mt-4">
+        <form onSubmit={handleSave} className="card-glass rounded-lg p-4 mb-4">
           <label className="block text-muted text-[11px] uppercase tracking-wide mb-1.5">
             Heutiges Gewicht eintragen
           </label>
@@ -136,6 +104,29 @@ export default function StatsHeader({
           </div>
         </form>
       )}
+
+      {/* Untere Stats-Box: verbleibend / Tage / Ziel */}
+      <div className="card-glass rounded-lg py-5 grid grid-cols-3">
+        <div className="text-center">
+          <div>
+            <span className="font-display text-3xl">{Math.max(0, goalWeight - latestWeight).toFixed(1)}</span>
+            <span className="text-muted text-sm"> kg</span>
+          </div>
+          <div className="text-accent text-[11px] font-bold uppercase tracking-wide mt-1">left</div>
+        </div>
+        <div className="text-center border-x border-accent/40 px-2">
+          <div className="text-[11px] uppercase tracking-wide">Noch</div>
+          <div className="font-display text-4xl text-accent leading-none my-0.5">{daysLeft}</div>
+          <div className="text-[11px] uppercase tracking-wide">Tage</div>
+        </div>
+        <div className="text-center">
+          <div>
+            <span className="font-display text-3xl">{goalWeight}</span>
+            <span className="text-muted text-sm"> kg</span>
+          </div>
+          <div className="text-accent text-[11px] font-bold uppercase tracking-wide mt-1">goal</div>
+        </div>
+      </div>
     </div>
   );
 }

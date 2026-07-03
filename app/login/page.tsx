@@ -56,7 +56,7 @@ export default function LoginPage() {
 
         <form
           onSubmit={handleSubmit}
-          className="bg-panel border border-line rounded-sm p-6 space-y-4"
+          className="card-glass rounded-lg p-6 space-y-4"
         >
           <h2 className="text-sm text-muted tracking-widest">
             {mode === "login" ? "Login" : "Account erstellen"}
