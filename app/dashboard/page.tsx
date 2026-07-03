@@ -1,7 +1,7 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { bmiCategory, calcBMI, calcDailyTarget, calcProteinTarget, Profile } from "@/lib/calculations";
-import { MEAL_SLOTS, MealSlot, Recipe, isExpired, scaleRecipe } from "@/lib/mealPlan";
+import { MEAL_SLOTS, MealSlot, Recipe, getMealPct, isExpired, scaleRecipe } from "@/lib/mealPlan";
 import NutritionCard from "@/components/NutritionCard";
 import StatsHeader from "@/components/StatsHeader";
 import MealCard from "@/components/MealCard";
@@ -122,7 +122,7 @@ export default async function DashboardPage() {
               activeRecipe = recipesForSlot.find((r) => r.user_id === null) ?? recipesForSlot[0];
             }
 
-            const meal = activeRecipe ? scaleRecipe(activeRecipe, calorieTarget * slotDef.pct) : null;
+            const meal = activeRecipe ? scaleRecipe(activeRecipe, calorieTarget * getMealPct(profile, slotDef.key)) : null;
 
             return (
               <MealCard
@@ -144,6 +144,10 @@ export default async function DashboardPage() {
         <div className="text-center mt-8 text-muted text-[11px]">
           <Link href="/recipes" className="underline underline-offset-2">
             Rezepte verwalten
+          </Link>
+          <span className="mx-2">·</span>
+          <Link href="/profile" className="underline underline-offset-2">
+            Mein Profil
           </Link>
           <span className="mx-2">·</span>
           <SignOutLink />

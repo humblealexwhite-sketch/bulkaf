@@ -1,11 +1,31 @@
 export type MealSlot = "fruehstueck" | "mittag" | "nachmittag" | "abend";
 
-export const MEAL_SLOTS: { key: MealSlot; label: string; pct: number; mealPrep: boolean }[] = [
-  { key: "fruehstueck", label: "Frühstück", pct: 0.28, mealPrep: false },
-  { key: "mittag", label: "Mittagessen", pct: 0.32, mealPrep: true },
-  { key: "nachmittag", label: "Nachmittags-Shake", pct: 0.18, mealPrep: false },
-  { key: "abend", label: "Abendessen", pct: 0.22, mealPrep: true },
+export const MEAL_SLOTS: { key: MealSlot; label: string; mealPrep: boolean }[] = [
+  { key: "fruehstueck", label: "Frühstück", mealPrep: false },
+  { key: "mittag", label: "Mittagessen", mealPrep: true },
+  { key: "nachmittag", label: "Nachmittags-Shake", mealPrep: false },
+  { key: "abend", label: "Abendessen", mealPrep: true },
 ];
+
+export const DEFAULT_MEAL_PCT: Record<MealSlot, number> = {
+  fruehstueck: 0.28,
+  mittag: 0.32,
+  nachmittag: 0.18,
+  abend: 0.22,
+};
+
+export function getMealPct(
+  profile: { pct_fruehstueck?: number | null; pct_mittag?: number | null; pct_nachmittag?: number | null; pct_abend?: number | null },
+  slot: MealSlot
+): number {
+  const map: Record<MealSlot, number | null | undefined> = {
+    fruehstueck: profile.pct_fruehstueck,
+    mittag: profile.pct_mittag,
+    nachmittag: profile.pct_nachmittag,
+    abend: profile.pct_abend,
+  };
+  return map[slot] ?? DEFAULT_MEAL_PCT[slot];
+}
 
 export type Food = {
   id: string;
