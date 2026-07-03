@@ -81,7 +81,7 @@ export default async function DashboardPage() {
 
   return (
     <div className="min-h-screen bg-bg">
-      <div className="relative w-full h-[440px] overflow-hidden">
+      <div className="max-w-md mx-auto relative w-full h-[440px] overflow-hidden">
         <img src="/hero-bull.png" alt="BulkAF" className="absolute inset-0 w-full h-full object-cover object-top" />
         <div className="absolute inset-x-0 bottom-0 h-56 bg-gradient-to-b from-transparent to-bg" />
       </div>
