@@ -51,7 +51,7 @@ export default function LoginPage() {
           </h1>
         </div>
         <p className="text-muted text-xs uppercase tracking-widest mb-8">
-          Dreckig hoch. Kein Gemüse-Gerede.
+          Kalorien ohne Kompromisse.
         </p>
 
         <form

@@ -17,10 +17,10 @@ const inter = Inter({
 export const metadata: Metadata = {
   metadataBase: new URL("https://bulkaf.com"),
   title: "BulkAF",
-  description: "Dreckig hoch. Kein Gemüse-Gerede.",
+  description: "Kalorien ohne Kompromisse.",
   openGraph: {
     title: "BulkAF",
-    description: "Dreckig hoch. Kein Gemüse-Gerede.",
+    description: "Kalorien ohne Kompromisse.",
     url: "https://bulkaf.com",
     siteName: "BulkAF",
     locale: "de_DE",
@@ -29,7 +29,7 @@ export const metadata: Metadata = {
   twitter: {
     card: "summary_large_image",
     title: "BulkAF",
-    description: "Dreckig hoch. Kein Gemüse-Gerede.",
+    description: "Kalorien ohne Kompromisse.",
   },
 };
 
