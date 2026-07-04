@@ -37,6 +37,7 @@ export default async function ProfilePage() {
             weight: profile.weight,
             goal_weight: profile.goal_weight,
             goal_date: profile.goal_date,
+            start_date: profile.start_date,
             manual_calorie_target: profile.manual_calorie_target,
             pct_fruehstueck: profile.pct_fruehstueck,
             pct_mittag: profile.pct_mittag,

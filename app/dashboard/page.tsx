@@ -102,6 +102,7 @@ export default async function DashboardPage() {
           latestWeight={latestWeight}
           goalWeight={p.goal_weight}
           goalDate={p.goal_date}
+          startDate={profile.start_date}
           daysLeft={days}
           weightLogs={weightLogs ?? []}
         />

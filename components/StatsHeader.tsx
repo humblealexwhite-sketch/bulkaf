@@ -56,6 +56,7 @@ export default function StatsHeader({
   latestWeight,
   goalWeight,
   goalDate,
+  startDate: startDateProp,
   daysLeft,
   weightLogs = [],
 }: {
@@ -63,6 +64,7 @@ export default function StatsHeader({
   latestWeight: number;
   goalWeight: number;
   goalDate: string;
+  startDate?: string | null;
   daysLeft: number;
   weightLogs?: WeightLog[];
 }) {
@@ -125,7 +127,11 @@ export default function StatsHeader({
       (a, b) => new Date(a.log_date).getTime() - new Date(b.log_date).getTime()
     );
 
-    const startDate = sortedLogs.length ? new Date(sortedLogs[0].log_date) : new Date();
+    const startDate = startDateProp
+      ? new Date(startDateProp)
+      : sortedLogs.length
+      ? new Date(sortedLogs[0].log_date)
+      : new Date();
     const today = new Date();
     const goal = new Date(goalDate);
 
@@ -181,7 +187,7 @@ export default function StatsHeader({
     yMajors.add(topRounded);
 
     return { merged, totalDays, todayPct, monthStarts, monthMids, yMin, yMax, yTicks, yMajors };
-  }, [weightLogs, goalDate, startWeight, latestWeight, goalWeight]);
+  }, [weightLogs, goalDate, startWeight, latestWeight, goalWeight, startDateProp]);
 
   function YAxisTick(props: any) {
     const { x, y, payload } = props;

@@ -11,6 +11,7 @@ type Profile = {
   weight: number;
   goal_weight: number;
   goal_date: string;
+  start_date: string | null;
   manual_calorie_target: number | null;
   pct_fruehstueck: number;
   pct_mittag: number;
@@ -26,6 +27,9 @@ export default function ProfileForm({ profile }: { profile: Profile }) {
 
   const [name, setName] = useState(profile.name ?? "");
   const [startWeight, setStartWeight] = useState(String(profile.weight));
+  const [startDate, setStartDate] = useState(
+    profile.start_date ?? new Date().toISOString().slice(0, 10)
+  );
   const [goalWeight, setGoalWeight] = useState(String(profile.goal_weight));
   const [goalDate, setGoalDate] = useState(profile.goal_date);
   const [calorieTarget, setCalorieTarget] = useState(
@@ -52,6 +56,7 @@ export default function ProfileForm({ profile }: { profile: Profile }) {
       .update({
         name: name || null,
         weight: parseFloat(startWeight),
+        start_date: startDate,
         goal_weight: parseFloat(goalWeight),
         goal_date: goalDate,
         manual_calorie_target: calorieTarget ? parseFloat(calorieTarget) : null,
@@ -103,14 +108,25 @@ export default function ProfileForm({ profile }: { profile: Profile }) {
         </div>
       </div>
 
-      <div>
-        <label className="block text-xs text-muted uppercase tracking-wide mb-1.5">Zieldatum</label>
-        <input
-          type="date"
-          value={goalDate}
-          onChange={(e) => setGoalDate(e.target.value)}
-          className="w-full px-3 py-2 rounded-lg text-sm"
-        />
+      <div className="grid grid-cols-2 gap-4">
+        <div>
+          <label className="block text-xs text-muted uppercase tracking-wide mb-1.5">Anfangsdatum</label>
+          <input
+            type="date"
+            value={startDate}
+            onChange={(e) => setStartDate(e.target.value)}
+            className="w-full px-3 py-2 rounded-lg text-sm"
+          />
+        </div>
+        <div>
+          <label className="block text-xs text-muted uppercase tracking-wide mb-1.5">Zieldatum</label>
+          <input
+            type="date"
+            value={goalDate}
+            onChange={(e) => setGoalDate(e.target.value)}
+            className="w-full px-3 py-2 rounded-lg text-sm"
+          />
+        </div>
       </div>
 
       <div>
