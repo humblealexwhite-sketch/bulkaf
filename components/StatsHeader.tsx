@@ -72,6 +72,7 @@ export default function StatsHeader({
   const [showChart, setShowChart] = useState(false);
   const [value, setValue] = useState("");
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const totalDelta = goalWeight - startWeight;
   const currentDelta = latestWeight - startWeight;
@@ -84,20 +85,31 @@ export default function StatsHeader({
     const weight = parseFloat(value);
     if (!weight) return;
     setLoading(true);
+    setError(null);
     const {
       data: { user },
     } = await supabase.auth.getUser();
     if (!user) return;
 
-    await supabase
+    const { error: upsertError } = await supabase
       .from("weight_logs")
       .upsert(
         { user_id: user.id, log_date: new Date().toISOString().slice(0, 10), weight },
         { onConflict: "user_id,log_date" }
       );
 
-    setValue("");
     setLoading(false);
+
+    if (upsertError) {
+      setError(
+        upsertError.message.includes("no unique or exclusion constraint")
+          ? "DB fehlt noch die Unique-Constraint auf weight_logs (user_id, log_date). Führe fix_weight_logs.sql im Supabase SQL Editor aus."
+          : `Speichern fehlgeschlagen: ${upsertError.message}`
+      );
+      return;
+    }
+
+    setValue("");
     setShowUpdate(false);
     router.refresh();
   }
@@ -242,6 +254,9 @@ export default function StatsHeader({
               Speichern
             </button>
           </div>
+          {error && (
+            <p className="text-red-400 text-xs mt-2">{error}</p>
+          )}
         </form>
       )}
 
@@ -332,7 +347,7 @@ export default function StatsHeader({
                 fill="#2E93E0"
                 fillOpacity={0.15}
                 connectNulls
-                dot={false}
+                dot={{ r: 4, fill: "#2E93E0", stroke: "#0c1116", strokeWidth: 2 }}
                 isAnimationActive={false}
               />
               <Line
