@@ -101,7 +101,9 @@ export default async function DashboardPage() {
           startWeight={p.weight}
           latestWeight={latestWeight}
           goalWeight={p.goal_weight}
+          goalDate={p.goal_date}
           daysLeft={days}
+          weightLogs={weightLogs ?? []}
         />
 
         <div className="border-t border-line pt-4">
