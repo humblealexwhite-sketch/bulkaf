@@ -19,6 +19,8 @@ export default function CreateFoodForm() {
   const [fat, setFat] = useState("");
   const [price, setPrice] = useState("");
   const [priceNote, setPriceNote] = useState("");
+  const [brand, setBrand] = useState("");
+  const [store, setStore] = useState("");
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -43,6 +45,8 @@ export default function CreateFoodForm() {
       fat: parseFloat(fat) || 0,
       price: price ? parseFloat(price) : null,
       price_note: priceNote || null,
+      brand: brand || null,
+      store: store || null,
     });
 
     setLoading(false);
@@ -57,6 +61,8 @@ export default function CreateFoodForm() {
     setFat("");
     setPrice("");
     setPriceNote("");
+    setBrand("");
+    setStore("");
     setOpen(false);
     router.refresh();
   }
@@ -99,10 +105,23 @@ export default function CreateFoodForm() {
         <input placeholder="Carbs g" type="number" value={carbs} onChange={(e) => setCarbs(e.target.value)} className="px-3 py-2 rounded-sm text-sm" />
         <input placeholder="Fett g" type="number" value={fat} onChange={(e) => setFat(e.target.value)} className="px-3 py-2 rounded-sm text-sm" />
       </div>
+      <input
+        placeholder="Marke (optional)"
+        value={brand}
+        onChange={(e) => setBrand(e.target.value)}
+        className="w-full px-3 py-2 rounded-sm text-sm"
+      />
       <div className="grid grid-cols-2 gap-3">
         <input placeholder="Preis (optional)" type="number" step="0.01" value={price} onChange={(e) => setPrice(e.target.value)} className="px-3 py-2 rounded-sm text-sm" />
-        <input placeholder="z.B. pro 1kg" value={priceNote} onChange={(e) => setPriceNote(e.target.value)} className="px-3 py-2 rounded-sm text-sm" />
+        <input placeholder="z.B. 500g" value={priceNote} onChange={(e) => setPriceNote(e.target.value)} className="px-3 py-2 rounded-sm text-sm" />
       </div>
+      <select value={store} onChange={(e) => setStore(e.target.value)} className="w-full px-3 py-2 rounded-sm text-sm">
+        <option value="">Supermarkt (optional)</option>
+        <option value="Lidl">Lidl</option>
+        <option value="Aldi">Aldi</option>
+        <option value="Rewe">Rewe</option>
+        <option value="Kaufland">Kaufland</option>
+      </select>
       {error && <p className="text-accent text-xs">{error}</p>}
       <div className="flex gap-2">
         <button type="submit" disabled={loading} className="bg-accent text-white font-semibold uppercase tracking-wide py-2 px-4 rounded-sm text-xs disabled:opacity-60">
