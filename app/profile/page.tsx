@@ -43,6 +43,8 @@ export default async function ProfilePage() {
             pct_mittag: profile.pct_mittag,
             pct_nachmittag: profile.pct_nachmittag,
             pct_abend: profile.pct_abend,
+            equipment: profile.equipment,
+            go_to_store: profile.go_to_store,
           }}
         />
       </div>

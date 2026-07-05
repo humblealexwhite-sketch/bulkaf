@@ -19,12 +19,21 @@ export default async function RecipesPage() {
     .or(`user_id.is.null,user_id.eq.${user.id}`)
     .order("name");
 
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("go_to_store, equipment")
+    .eq("user_id", user.id)
+    .single();
+
   const { data: recipesRaw } = await supabase
     .from("recipes")
-    .select("id, name, meal_type, user_id, recipe_items(amount, foods(name, unit))")
+    .select("id, name, meal_type, user_id, required_equipment, recipe_items(amount, foods(name, unit))")
     .or(`user_id.is.null,user_id.eq.${user.id}`);
 
-  const recipes = recipesRaw ?? [];
+  const userEquipment: string[] = profile?.equipment ?? [];
+  const recipes = (recipesRaw ?? []).filter((r: any) =>
+    (r.required_equipment ?? []).every((eq: string) => userEquipment.includes(eq))
+  );
 
   return (
     <div className="min-h-screen bg-bg">
@@ -55,7 +64,7 @@ export default async function RecipesPage() {
 
         <div className="border-t border-line pt-6">
           <div className="text-muted text-xs uppercase tracking-widest mb-2">Nahrungsmittel</div>
-          <FoodsAccordion foods={(foods ?? []) as any} />
+          <FoodsAccordion foods={(foods ?? []) as any} defaultStore={profile?.go_to_store} />
         </div>
 
         <div className="pt-4">

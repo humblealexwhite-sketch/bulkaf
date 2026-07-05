@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { MealSlot } from "@/lib/mealPlan";
+import { EQUIPMENT_OPTIONS } from "@/lib/equipment";
 
 type FoodOption = { id: string; name: string; unit: string };
 
@@ -16,9 +17,19 @@ export default function CreateRecipeForm({ foods }: { foods: FoodOption[] }) {
 
   const [name, setName] = useState("");
   const [mealType, setMealType] = useState<MealSlot>("mittag");
+  const [equipment, setEquipment] = useState<Set<string>>(new Set());
   const [rows, setRows] = useState<{ foodId: string; amount: string }[]>([
     { foodId: foods[0]?.id ?? "", amount: "" },
   ]);
+
+  function toggleEquipment(key: string) {
+    setEquipment((cur) => {
+      const next = new Set(cur);
+      if (next.has(key)) next.delete(key);
+      else next.add(key);
+      return next;
+    });
+  }
 
   function updateRow(i: number, field: "foodId" | "amount", value: string) {
     setRows((r) => r.map((row, idx) => (idx === i ? { ...row, [field]: value } : row)));
@@ -49,7 +60,7 @@ export default function CreateRecipeForm({ foods }: { foods: FoodOption[] }) {
 
     const { data: recipe, error: recipeError } = await supabase
       .from("recipes")
-      .insert({ user_id: user.id, name, meal_type: mealType })
+      .insert({ user_id: user.id, name, meal_type: mealType, required_equipment: Array.from(equipment) })
       .select()
       .single();
 
@@ -74,6 +85,7 @@ export default function CreateRecipeForm({ foods }: { foods: FoodOption[] }) {
     }
 
     setName("");
+    setEquipment(new Set());
     setRows([{ foodId: foods[0]?.id ?? "", amount: "" }]);
     setOpen(false);
     router.refresh();
@@ -109,6 +121,24 @@ export default function CreateRecipeForm({ foods }: { foods: FoodOption[] }) {
         <option value="nachmittag">Nachmittags-Shake</option>
         <option value="abend">Abendessen</option>
       </select>
+
+      <div>
+        <div className="text-muted text-[11px] uppercase tracking-wide mb-1.5">Benötigtes Equipment</div>
+        <div className="flex flex-wrap gap-1.5">
+          {EQUIPMENT_OPTIONS.map((eq) => (
+            <button
+              key={eq.key}
+              type="button"
+              onClick={() => toggleEquipment(eq.key)}
+              className={`text-xs px-2.5 py-1.5 rounded-sm transition-colors ${
+                equipment.has(eq.key) ? "bg-accent text-white" : "bg-white/5 text-muted"
+              }`}
+            >
+              {eq.label}
+            </button>
+          ))}
+        </div>
+      </div>
 
       <div className="space-y-2">
         {rows.map((row, i) => (

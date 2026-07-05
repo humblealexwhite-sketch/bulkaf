@@ -60,8 +60,7 @@ export default function SetupPage() {
     );
 
     setLoading(false);
-    router.push("/dashboard");
-    router.refresh();
+    router.push("/setup/equipment");
   }
 
   return (

@@ -22,6 +22,7 @@ export default async function DashboardPage() {
     .single();
 
   if (!profile) redirect("/setup");
+  if (!profile.go_to_store) redirect("/setup/equipment");
 
   const { data: weightLogs } = await supabase
     .from("weight_logs")
@@ -51,17 +52,20 @@ export default async function DashboardPage() {
   const { data: recipesRaw } = await supabase
     .from("recipes")
     .select(
-      "id, name, meal_type, user_id, recipe_items(amount, foods(id, name, unit, kcal, protein, carbs, fat, price, price_note))"
+      "id, name, meal_type, user_id, required_equipment, recipe_items(amount, foods(id, name, unit, kcal, protein, carbs, fat, price, price_note))"
     )
     .or(`user_id.is.null,user_id.eq.${user.id}`);
 
-  const allRecipes: Recipe[] = (recipesRaw ?? []).map((r: any) => ({
-    id: r.id,
-    name: r.name,
-    meal_type: r.meal_type,
-    user_id: r.user_id,
-    items: (r.recipe_items ?? []).map((it: any) => ({ amount: it.amount, food: it.foods })),
-  }));
+  const userEquipment: string[] = profile.equipment ?? [];
+  const allRecipes: Recipe[] = (recipesRaw ?? [])
+    .filter((r: any) => (r.required_equipment ?? []).every((eq: string) => userEquipment.includes(eq)))
+    .map((r: any) => ({
+      id: r.id,
+      name: r.name,
+      meal_type: r.meal_type,
+      user_id: r.user_id,
+      items: (r.recipe_items ?? []).map((it: any) => ({ amount: it.amount, food: it.foods })),
+    }));
 
   const { data: activePlans } = await supabase
     .from("active_meal_plan")

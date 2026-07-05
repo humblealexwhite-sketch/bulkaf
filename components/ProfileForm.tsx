@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { MealSlot } from "@/lib/mealPlan";
 import MealWeightSliders from "@/components/MealWeightSliders";
+import { EQUIPMENT_OPTIONS, STORE_OPTIONS } from "@/lib/equipment";
 
 type Profile = {
   name: string | null;
@@ -17,6 +18,8 @@ type Profile = {
   pct_mittag: number;
   pct_nachmittag: number;
   pct_abend: number;
+  equipment: string[] | null;
+  go_to_store: string | null;
 };
 
 export default function ProfileForm({ profile }: { profile: Profile }) {
@@ -41,6 +44,17 @@ export default function ProfileForm({ profile }: { profile: Profile }) {
     nachmittag: profile.pct_nachmittag * 100,
     abend: profile.pct_abend * 100,
   });
+  const [equipment, setEquipment] = useState<Set<string>>(new Set(profile.equipment ?? []));
+  const [goToStore, setGoToStore] = useState<string | null>(profile.go_to_store);
+
+  function toggleEquipment(key: string) {
+    setEquipment((cur) => {
+      const next = new Set(cur);
+      if (next.has(key)) next.delete(key);
+      else next.add(key);
+      return next;
+    });
+  }
 
   async function handleSave(e: React.FormEvent) {
     e.preventDefault();
@@ -64,6 +78,8 @@ export default function ProfileForm({ profile }: { profile: Profile }) {
         pct_mittag: pct.mittag / 100,
         pct_nachmittag: pct.nachmittag / 100,
         pct_abend: pct.abend / 100,
+        equipment: Array.from(equipment),
+        go_to_store: goToStore,
       })
       .eq("user_id", user.id);
 
@@ -140,6 +156,49 @@ export default function ProfileForm({ profile }: { profile: Profile }) {
           placeholder="z.B. 3800"
           className="w-full px-3 py-2 rounded-lg text-sm"
         />
+      </div>
+
+      <div className="border-t border-line pt-5">
+        <div className="text-xs text-muted uppercase tracking-wide mb-3">Küchenausstattung</div>
+        <div className="grid grid-cols-2 gap-2">
+          {EQUIPMENT_OPTIONS.map((eq) => (
+            <button
+              key={eq.key}
+              type="button"
+              onClick={() => toggleEquipment(eq.key)}
+              className={`flex items-center gap-2 px-3 py-2.5 rounded-md text-sm text-left transition-colors ${
+                equipment.has(eq.key) ? "bg-accent text-white" : "bg-white/5 text-text"
+              }`}
+            >
+              <span
+                className={`w-4 h-4 rounded-sm border flex items-center justify-center shrink-0 ${
+                  equipment.has(eq.key) ? "bg-white border-white" : "border-white/30"
+                }`}
+              >
+                {equipment.has(eq.key) && <span className="w-2 h-2 bg-accent rounded-sm" />}
+              </span>
+              {eq.label}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      <div className="border-t border-line pt-5">
+        <div className="text-xs text-muted uppercase tracking-wide mb-3">Go-to-Laden</div>
+        <div className="grid grid-cols-2 gap-2">
+          {STORE_OPTIONS.map((s) => (
+            <button
+              key={s}
+              type="button"
+              onClick={() => setGoToStore(s)}
+              className={`py-2.5 rounded-md text-sm font-semibold uppercase tracking-wide transition-colors ${
+                goToStore === s ? "bg-accent text-white" : "bg-white/5 text-text"
+              }`}
+            >
+              {s}
+            </button>
+          ))}
+        </div>
       </div>
 
       <div className="border-t border-line pt-5">
