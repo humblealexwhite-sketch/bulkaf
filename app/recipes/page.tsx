@@ -37,9 +37,9 @@ export default async function RecipesPage() {
 
   return (
     <div className="min-h-screen bg-bg">
-      <div className="max-w-md mx-auto relative w-full overflow-hidden" style={{ aspectRatio: "2623 / 1382" }}>
+      <div className="max-w-md mx-auto relative w-full overflow-hidden" style={{ aspectRatio: "1000 / 350" }}>
         <img src="/hangry-hero1.png" alt="BulkAF" className="absolute inset-0 w-full h-full object-cover object-top" />
-        <div className="absolute inset-x-0 bottom-0 h-20 bg-gradient-to-b from-transparent to-bg" />
+        <div className="absolute inset-x-0 bottom-0 h-11 bg-gradient-to-b from-transparent to-bg" />
         <Link
           href="/dashboard"
           className="absolute top-6 right-6 bg-black/70 text-white text-[11px] uppercase tracking-wide px-3 py-2 rounded-md"
@@ -49,10 +49,13 @@ export default async function RecipesPage() {
       </div>
 
       <div className="px-6 relative z-10 pb-8">
-      <div className="max-w-md mx-auto pt-6">
+      <div className="max-w-md mx-auto">
 
-        <div className="mb-4">
-          <div className="text-muted text-xs uppercase tracking-widest mb-2">Rezepte</div>
+        <div className="mb-4 -mt-[22px]">
+          <div className="relative inline-block mb-2">
+            <div className="absolute -inset-1.5 bg-black/60 blur-md rounded-full -z-10" />
+            <div className="relative text-muted text-xs uppercase tracking-widest">Rezepte</div>
+          </div>
           <RecipesAccordion recipes={recipes as any} />
         </div>
 
@@ -62,7 +65,7 @@ export default async function RecipesPage() {
           />
         </div>
 
-        <div className="border-t border-line pt-6">
+        <div className="border-t-4 border-line pt-6">
           <div className="text-muted text-xs uppercase tracking-widest mb-2">Nahrungsmittel</div>
           <FoodsAccordion foods={(foods ?? []) as any} defaultStore={profile?.go_to_store} />
         </div>

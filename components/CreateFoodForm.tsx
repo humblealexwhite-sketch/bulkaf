@@ -69,13 +69,15 @@ export default function CreateFoodForm() {
 
   if (!open) {
     return (
-      <button
-        type="button"
-        onClick={() => setOpen(true)}
-        className="text-accent text-xs uppercase tracking-wide underline underline-offset-2"
-      >
-        + Neues Nahrungsmittel
-      </button>
+      <div className="flex justify-center">
+        <button
+          type="button"
+          onClick={() => setOpen(true)}
+          className="bg-accent text-white text-[11px] font-bold uppercase tracking-wide rounded-md py-1.5 px-5"
+        >
+          + Neues Nahrungsmittel
+        </button>
+      </div>
     );
   }
 

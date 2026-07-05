@@ -21,12 +21,11 @@ const STORES = ["Lidl", "Aldi", "Rewe", "Kaufland"];
 
 export default function FoodsAccordion({
   foods,
-  defaultStore,
 }: {
   foods: FoodRow[];
   defaultStore?: string | null;
 }) {
-  const [active, setActive] = useState<string | null>(defaultStore ?? null);
+  const [active, setActive] = useState<string | null>(null);
 
   const activeFoods = active
     ? foods.filter((f) => (f.store ?? "").toLowerCase() === active.toLowerCase())
