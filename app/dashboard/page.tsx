@@ -5,7 +5,7 @@ import { MEAL_SLOTS, MealSlot, Recipe, getMealPct, isExpired, scaleRecipe } from
 import NutritionCard from "@/components/NutritionCard";
 import StatsHeader from "@/components/StatsHeader";
 import MealCard from "@/components/MealCard";
-import Link from "next/link";
+import SideMenu from "@/components/SideMenu";
 
 export default async function DashboardPage() {
   const supabase = createClient();
@@ -88,6 +88,7 @@ export default async function DashboardPage() {
       <div className="max-w-md mx-auto relative w-full h-[440px] overflow-hidden">
         <img src="/hero-bull.png" alt="BulkAF" className="absolute inset-0 w-full h-full object-cover object-top" />
         <div className="absolute inset-x-0 bottom-0 h-56 bg-gradient-to-b from-transparent to-bg" />
+        <SideMenu signOutAction={signOut} name={profile.name} />
       </div>
 
       <div className="px-6 -mt-24 relative z-10 pb-8">
@@ -146,33 +147,16 @@ export default async function DashboardPage() {
           })}
         </div>
 
-        <div className="text-center mt-8 text-muted text-[11px]">
-          <Link href="/recipes" className="underline underline-offset-2">
-            Rezepte verwalten
-          </Link>
-          <span className="mx-2">·</span>
-          <Link href="/profile" className="underline underline-offset-2">
-            Mein Profil
-          </Link>
-          <span className="mx-2">·</span>
-          <SignOutLink />
-        </div>
+        <div className="h-4" />
       </div>
       </div>
     </div>
   );
 }
 
-function SignOutLink() {
-  async function signOut() {
-    "use server";
-    const supabase = createClient();
-    await supabase.auth.signOut();
-    redirect("/login");
-  }
-  return (
-    <form action={signOut} className="inline">
-      <button className="underline underline-offset-2">Logout</button>
-    </form>
-  );
+async function signOut() {
+  "use server";
+  const supabase = createClient();
+  await supabase.auth.signOut();
+  redirect("/login");
 }

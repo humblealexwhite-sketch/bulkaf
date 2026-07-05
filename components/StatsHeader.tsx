@@ -94,17 +94,41 @@ export default function StatsHeader({
       .sort((a, b) => a.t - b.t);
   }, [weightLogs, startDate, startWeight]);
 
-  // Stats: unabhängig vom aktiven Tab, immer "seit Start"
+  function valueAtTime(series: { t: number; weight: number }[], t: number): number {
+    if (series.length === 0) return 0;
+    if (t <= series[0].t) return series[0].weight;
+    if (t >= series[series.length - 1].t) return series[series.length - 1].weight;
+    for (let i = 0; i < series.length - 1; i++) {
+      if (series[i].t <= t && t <= series[i + 1].t) {
+        return interpolateAt(series[i], series[i + 1], t);
+      }
+    }
+    return series[series.length - 1].weight;
+  }
+
+  // Stats: unabhängig vom aktiven Tab
   const stats = useMemo(() => {
-    const changeSinceStart = latestWeight - startWeight;
-    const planWeeks = daysBetween(startDate, new Date(goalDate)) / 7;
-    const targetPace = planWeeks > 0 ? (goalWeight - startWeight) / planWeeks : 0;
+    const weeksRemainingRaw = daysBetween(today, new Date(goalDate)) / 7;
+    const weeksRemaining = Math.round(Math.max(0, weeksRemainingRaw) * 2) / 2;
+
+    // Dynamisch: was ab JETZT noch nötig ist, nicht der ursprüngliche Plan seit Start
+    const remainingWeight = goalWeight - latestWeight;
+    const targetPace = weeksRemainingRaw > 0.5 ? remainingWeight / weeksRemainingRaw : null;
+
+    // "Dein Tempo": rollierendes 4-Wochen-Fenster statt Durchschnitt seit Start
     const elapsedWeeks = daysBetween(startDate, today) / 7;
-    const actualPace = elapsedWeeks > 0.5 ? changeSinceStart / elapsedWeeks : null;
+    const paceWindowWeeks = Math.min(4, elapsedWeeks);
+    const refWeight = valueAtTime(fullSeries, today.getTime() - paceWindowWeeks * 7 * DAY_MS);
+    const actualPace = paceWindowWeeks > 0.5 ? (latestWeight - refWeight) / paceWindowWeeks : null;
+
     const onTrack =
-      actualPace == null ? null : targetPace >= 0 ? actualPace >= targetPace : actualPace <= targetPace;
-    return { changeSinceStart, targetPace, actualPace, onTrack };
-  }, [startWeight, latestWeight, goalWeight, goalDate, startDate]);
+      actualPace == null || targetPace == null
+        ? null
+        : targetPace >= 0
+        ? actualPace >= targetPace
+        : actualPace <= targetPace;
+    return { weeksRemaining, targetPace, actualPace, onTrack };
+  }, [latestWeight, goalWeight, goalDate, startDate, fullSeries]);
 
   // Sichtbares Zeitfenster je nach Tab
   const windowRange = useMemo(() => {
@@ -149,14 +173,15 @@ export default function StatsHeader({
 
   function StatBox({ label, value, colorClass }: { label: string; value: string; colorClass?: string }) {
     return (
-      <div className="card-glass rounded-lg p-3 text-center">
-        <div className={`text-base font-bold ${colorClass ?? "text-text"}`}>{value}</div>
-        <div className="text-muted text-[10px] uppercase tracking-wide mt-0.5 leading-tight">{label}</div>
+      <div className="card-glass rounded-lg px-1.5 py-3 text-center overflow-hidden">
+        <div className={`text-base font-bold text-center whitespace-nowrap ${colorClass ?? "text-text"}`}>
+          {value}
+        </div>
+        <div className="text-muted text-[10px] uppercase tracking-wide mt-0.5 leading-tight whitespace-pre-line">{label}</div>
       </div>
     );
   }
 
-  const fmtSigned = (v: number) => `${v >= 0 ? "+" : ""}${Math.round(v)}kg`;
   const fmtPace = (v: number | null) => (v == null ? "–" : `${v >= 0 ? "+" : ""}${v.toFixed(2)}kg`);
 
   return (
@@ -238,7 +263,7 @@ export default function StatsHeader({
       </div>
 
       {/* Chart-Karte */}
-      <div className="card-glass rounded-lg p-4 mb-3">
+      <div className="card-glass rounded-lg pl-4 pr-1.5 pt-4 pb-[5px] mb-3">
         {tab === "gesamt" && (
           <div className="flex justify-between items-center mb-1">
             <button
@@ -270,7 +295,7 @@ export default function StatsHeader({
             </div>
           ) : (
             <ResponsiveContainer width="100%" height="100%">
-              <ComposedChart data={visibleSeries} margin={{ top: 8, right: 4, left: 0, bottom: 0 }}>
+              <ComposedChart data={visibleSeries} margin={{ top: 8, right: 0, left: 0, bottom: 0 }}>
                 <XAxis
                   dataKey="t"
                   type="number"
@@ -287,8 +312,8 @@ export default function StatsHeader({
                   orientation="right"
                   tick={{ fontSize: 10, fill: "#9AA2B1" }}
                   tickLine={false}
-                  axisLine={false}
-                  width={40}
+                  axisLine={{ stroke: "#3a4550" }}
+                  width={22}
                 />
                 <Tooltip
                   formatter={(v: any) => [`${v} kg`, "Gewicht"]}
@@ -328,8 +353,8 @@ export default function StatsHeader({
 
       {/* Stat-Boxen */}
       <div className="grid grid-cols-3 gap-2">
-        <StatBox label="Seit Start" value={fmtSigned(stats.changeSinceStart)} />
-        <StatBox label="Ziel pro Woche" value={fmtPace(stats.targetPace)} />
+        <StatBox label={"Wochen\nnoch"} value={stats.weeksRemaining.toFixed(1)} />
+        <StatBox label={"Ziel pro\nWoche"} value={fmtPace(stats.targetPace)} />
         <StatBox
           label="Dein Tempo"
           value={fmtPace(stats.actualPace)}

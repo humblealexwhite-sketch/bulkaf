@@ -42,9 +42,10 @@ export default async function RecipesPage() {
         <div className="absolute inset-x-0 bottom-0 h-11 bg-gradient-to-b from-transparent to-bg" />
         <Link
           href="/dashboard"
-          className="absolute top-6 right-6 bg-black/70 text-white text-[11px] uppercase tracking-wide px-3 py-2 rounded-md"
+          aria-label="Zurück"
+          className="absolute top-6 right-6 z-20 bg-white/80 w-10 h-10 rounded-md flex items-center justify-center overflow-hidden"
         >
-          Zurück
+          <img src="/pfeil-back.png" alt="" className="w-14 h-auto" />
         </Link>
       </div>
 

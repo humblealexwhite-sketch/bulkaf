@@ -30,16 +30,21 @@ export default async function ProfilePage() {
   });
 
   return (
-    <div className="min-h-screen px-6 py-8">
-      <div className="max-w-md mx-auto">
-        <div className="flex justify-between items-start mb-1">
-          <h1 className="text-3xl font-bold">
-            BULK<span className="text-accent">AF</span>
-          </h1>
-          <Link href="/dashboard" className="text-muted text-[11px] uppercase tracking-wide underline underline-offset-2">
-            Zurück
-          </Link>
-        </div>
+    <div className="min-h-screen bg-bg">
+      <div className="max-w-md mx-auto relative w-full overflow-hidden" style={{ aspectRatio: "1983 / 793" }}>
+        <img src="/profile-banner.png" alt="" className="absolute inset-0 w-full h-full object-cover object-top" />
+        <div className="absolute inset-x-0 bottom-0 h-10 bg-gradient-to-b from-transparent to-bg" />
+        <Link
+          href="/dashboard"
+          aria-label="Zurück"
+          className="absolute top-6 right-6 z-20 bg-white/80 w-10 h-10 rounded-md flex items-center justify-center overflow-hidden"
+        >
+          <img src="/pfeil-back.png" alt="" className="w-14 h-auto" />
+        </Link>
+      </div>
+
+      <div className="px-6 relative z-10 pb-8">
+      <div className="max-w-md mx-auto pt-6">
         <p className="text-muted text-xs uppercase tracking-widest mb-8">Mein Profil</p>
 
         <ProfileForm
@@ -59,6 +64,7 @@ export default async function ProfilePage() {
             go_to_store: profile.go_to_store,
           }}
         />
+      </div>
       </div>
     </div>
   );
