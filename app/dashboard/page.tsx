@@ -111,7 +111,7 @@ export default async function DashboardPage() {
           weightLogs={weightLogs ?? []}
         />
 
-        <div className="border-t border-line pt-4">
+        <div className="mt-7 border-t-4 border-line pt-7">
           <div className="text-muted text-xs uppercase tracking-widest mb-3">Heutige Mahlzeiten</div>
 
           {MEAL_SLOTS.map((slotDef, i) => {
