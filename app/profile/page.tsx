@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import ProfileForm from "@/components/ProfileForm";
+import { calcDailyTarget } from "@/lib/calculations";
 
 export default async function ProfilePage() {
   const supabase = createClient();
@@ -18,6 +19,16 @@ export default async function ProfilePage() {
 
   if (!profile) redirect("/setup");
 
+  const { target: calculatedTarget } = calcDailyTarget({
+    weight: profile.weight,
+    goal_weight: profile.goal_weight,
+    goal_date: profile.goal_date,
+    height: profile.height,
+    age: profile.age,
+    gender: profile.gender,
+    activity: profile.activity,
+  });
+
   return (
     <div className="min-h-screen px-6 py-8">
       <div className="max-w-md mx-auto">
@@ -32,6 +43,7 @@ export default async function ProfilePage() {
         <p className="text-muted text-xs uppercase tracking-widest mb-8">Mein Profil</p>
 
         <ProfileForm
+          calculatedTarget={calculatedTarget}
           profile={{
             name: profile.name,
             weight: profile.weight,

@@ -61,13 +61,13 @@ export default function EquipmentSetupPage() {
             <label className="block text-xs text-muted uppercase tracking-wide mb-2">
               Was hast du in deiner Küche?
             </label>
-            <div className="grid grid-cols-2 gap-2">
+            <div className="grid grid-cols-2 gap-1.5">
               {EQUIPMENT_OPTIONS.map((eq) => (
                 <button
                   key={eq.key}
                   type="button"
                   onClick={() => toggle(eq.key)}
-                  className={`flex items-center gap-2 px-3 py-2.5 rounded-md text-sm text-left transition-colors ${
+                  className={`flex items-center gap-1.5 px-2.5 py-2.5 rounded-md text-[13px] leading-tight text-left transition-colors ${
                     selected.has(eq.key) ? "bg-accent text-white" : "bg-white/5 text-text"
                   }`}
                 >
@@ -78,7 +78,7 @@ export default function EquipmentSetupPage() {
                   >
                     {selected.has(eq.key) && <span className="w-2 h-2 bg-accent rounded-sm" />}
                   </span>
-                  {eq.label}
+                  <span className="min-w-0 whitespace-pre-line">{eq.label}</span>
                 </button>
               ))}
             </div>

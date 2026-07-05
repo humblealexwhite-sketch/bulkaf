@@ -37,7 +37,7 @@ export default async function RecipesPage() {
 
   return (
     <div className="min-h-screen bg-bg">
-      <div className="max-w-md mx-auto relative w-full overflow-hidden" style={{ aspectRatio: "1915 / 1382" }}>
+      <div className="max-w-md mx-auto relative w-full overflow-hidden" style={{ aspectRatio: "2623 / 1382" }}>
         <img src="/hangry-hero1.png" alt="BulkAF" className="absolute inset-0 w-full h-full object-cover object-top" />
         <div className="absolute inset-x-0 bottom-0 h-20 bg-gradient-to-b from-transparent to-bg" />
         <Link

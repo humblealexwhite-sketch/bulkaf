@@ -4,7 +4,7 @@ export const EQUIPMENT_OPTIONS = [
   { key: "mikrowelle", label: "Mikrowelle" },
   { key: "airfryer", label: "Airfryer" },
   { key: "herd", label: "Herd" },
-  { key: "sandwichmaker", label: "Sandwichmaker" },
+  { key: "sandwichmaker", label: "Sandwich-\nmaker" },
 ] as const;
 
 export const STORE_OPTIONS = ["Lidl", "Aldi", "Rewe", "Kaufland"] as const;

@@ -22,7 +22,13 @@ type Profile = {
   go_to_store: string | null;
 };
 
-export default function ProfileForm({ profile }: { profile: Profile }) {
+export default function ProfileForm({
+  profile,
+  calculatedTarget,
+}: {
+  profile: Profile;
+  calculatedTarget: number;
+}) {
   const router = useRouter();
   const supabase = createClient();
   const [loading, setLoading] = useState(false);
@@ -36,7 +42,7 @@ export default function ProfileForm({ profile }: { profile: Profile }) {
   const [goalWeight, setGoalWeight] = useState(String(profile.goal_weight));
   const [goalDate, setGoalDate] = useState(profile.goal_date);
   const [calorieTarget, setCalorieTarget] = useState(
-    profile.manual_calorie_target != null ? String(profile.manual_calorie_target) : ""
+    String(profile.manual_calorie_target ?? Math.round(calculatedTarget))
   );
   const [pct, setPct] = useState<Record<MealSlot, number>>({
     fruehstueck: profile.pct_fruehstueck * 100,
@@ -90,20 +96,33 @@ export default function ProfileForm({ profile }: { profile: Profile }) {
 
   return (
     <form onSubmit={handleSave} className="space-y-6">
-      <div>
-        <label className="block text-xs text-muted uppercase tracking-wide mb-1.5">Name</label>
-        <input
-          type="text"
-          value={name}
-          onChange={(e) => setName(e.target.value)}
-          placeholder="Dein Name"
-          className="w-full px-3 py-2 rounded-lg text-sm"
-        />
+      <div className="grid grid-cols-2 gap-4">
+        <div>
+          <label className="block text-xs text-muted uppercase tracking-wide mb-1.5 min-h-[2rem] flex items-end">Name</label>
+          <input
+            type="text"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            placeholder="Dein Name"
+            className="w-full px-3 py-2 rounded-lg text-sm"
+          />
+        </div>
+        <div>
+          <label className="block text-xs text-muted uppercase tracking-wide mb-1.5 min-h-[2rem] flex items-end">
+            Kalorienziel (kcal)
+          </label>
+          <input
+            type="number"
+            value={calorieTarget}
+            onChange={(e) => setCalorieTarget(e.target.value)}
+            className="w-full px-3 py-2 rounded-lg text-sm"
+          />
+        </div>
       </div>
 
       <div className="grid grid-cols-2 gap-4">
         <div>
-          <label className="block text-xs text-muted uppercase tracking-wide mb-1.5">Anfangsgewicht (kg)</label>
+          <label className="block text-xs text-muted uppercase tracking-wide mb-1.5 min-h-[2rem] flex items-end">Anfangsgewicht (kg)</label>
           <input
             type="number"
             step="0.1"
@@ -113,7 +132,7 @@ export default function ProfileForm({ profile }: { profile: Profile }) {
           />
         </div>
         <div>
-          <label className="block text-xs text-muted uppercase tracking-wide mb-1.5">Zielgewicht (kg)</label>
+          <label className="block text-xs text-muted uppercase tracking-wide mb-1.5 min-h-[2rem] flex items-end">Zielgewicht (kg)</label>
           <input
             type="number"
             step="0.1"
@@ -126,7 +145,7 @@ export default function ProfileForm({ profile }: { profile: Profile }) {
 
       <div className="grid grid-cols-2 gap-4">
         <div>
-          <label className="block text-xs text-muted uppercase tracking-wide mb-1.5">Anfangsdatum</label>
+          <label className="block text-xs text-muted uppercase tracking-wide mb-1.5 min-h-[2rem] flex items-end">Anfangsdatum</label>
           <input
             type="date"
             value={startDate}
@@ -135,7 +154,7 @@ export default function ProfileForm({ profile }: { profile: Profile }) {
           />
         </div>
         <div>
-          <label className="block text-xs text-muted uppercase tracking-wide mb-1.5">Zieldatum</label>
+          <label className="block text-xs text-muted uppercase tracking-wide mb-1.5 min-h-[2rem] flex items-end">Zieldatum</label>
           <input
             type="date"
             value={goalDate}
@@ -145,28 +164,19 @@ export default function ProfileForm({ profile }: { profile: Profile }) {
         </div>
       </div>
 
-      <div>
-        <label className="block text-xs text-muted uppercase tracking-wide mb-1.5">
-          Kalorienziel manuell (leer = automatisch berechnet)
-        </label>
-        <input
-          type="number"
-          value={calorieTarget}
-          onChange={(e) => setCalorieTarget(e.target.value)}
-          placeholder="z.B. 3800"
-          className="w-full px-3 py-2 rounded-lg text-sm"
-        />
-      </div>
+      <p className="text-muted text-[11px] -mt-2">
+        Kalorienziel ist mit dem berechneten Wert ({Math.round(calculatedTarget)} kcal) vorausgefüllt — du kannst es oben jederzeit manuell überschreiben.
+      </p>
 
       <div className="border-t border-line pt-5">
         <div className="text-xs text-muted uppercase tracking-wide mb-3">Küchenausstattung</div>
-        <div className="grid grid-cols-2 gap-2">
+        <div className="grid grid-cols-2 gap-1.5">
           {EQUIPMENT_OPTIONS.map((eq) => (
             <button
               key={eq.key}
               type="button"
               onClick={() => toggleEquipment(eq.key)}
-              className={`flex items-center gap-2 px-3 py-2.5 rounded-md text-sm text-left transition-colors ${
+              className={`flex items-center gap-1.5 px-2.5 py-2.5 rounded-md text-[13px] leading-tight text-left transition-colors ${
                 equipment.has(eq.key) ? "bg-accent text-white" : "bg-white/5 text-text"
               }`}
             >
@@ -177,7 +187,7 @@ export default function ProfileForm({ profile }: { profile: Profile }) {
               >
                 {equipment.has(eq.key) && <span className="w-2 h-2 bg-accent rounded-sm" />}
               </span>
-              {eq.label}
+              <span className="min-w-0 whitespace-pre-line">{eq.label}</span>
             </button>
           ))}
         </div>
