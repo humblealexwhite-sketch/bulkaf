@@ -11,7 +11,7 @@ type RecipeRow = {
 };
 
 const BUTTONS: { key: string; label: string; filterKey: string }[] = [
-  { key: "fruehstueck", label: "Früh", filterKey: "nachmittag" }, // vorerst: gleiche Auswahl wie Shakes
+  { key: "fruehstueck", label: "Früh", filterKey: "fruehstueck" },
   { key: "mittag", label: "Mittag", filterKey: "mittag" },
   { key: "abend", label: "Abend", filterKey: "abend" },
   { key: "nachmittag", label: "Shakes", filterKey: "nachmittag" },
