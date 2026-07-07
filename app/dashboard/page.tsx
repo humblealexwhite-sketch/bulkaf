@@ -52,7 +52,7 @@ export default async function DashboardPage() {
   const { data: recipesRaw } = await supabase
     .from("recipes")
     .select(
-      "id, name, meal_type, user_id, required_equipment, recipe_items(amount, foods(id, name, unit, kcal, protein, carbs, fat, price, price_note))"
+      "id, name, meal_type, user_id, required_equipment, recipe_items(amount, foods(id, name, unit, kcal, protein, carbs, fat, price, price_note, piece_weight))"
     )
     .or(`user_id.is.null,user_id.eq.${user.id}`);
 
@@ -116,7 +116,12 @@ export default async function DashboardPage() {
           <div className="text-muted text-xs uppercase tracking-widest mb-3">Heutige Mahlzeiten</div>
 
           {MEAL_SLOTS.map((slotDef, i) => {
-            const recipesForSlot = allRecipes.filter((r) => r.meal_type === slotDef.key);
+            let recipesForSlot = allRecipes.filter((r) => r.meal_type === slotDef.key);
+            // Frühstück: Shakes zusätzlich erlauben, aber ans Listenende
+            if (slotDef.key === "fruehstueck") {
+              const shakes = allRecipes.filter((r) => r.meal_type === "nachmittag");
+              recipesForSlot = [...recipesForSlot, ...shakes];
+            }
             const plan = (activePlans ?? []).find((pl) => pl.meal_slot === slotDef.key);
             const expired = plan ? isExpired(plan.planned_until) : false;
 

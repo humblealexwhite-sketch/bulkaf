@@ -37,6 +37,7 @@ export type Food = {
   fat: number;
   price: number | null;
   price_note: string | null;
+  piece_weight: number | null;
 };
 
 export type RecipeItem = { amount: number; food: Food };
@@ -63,6 +64,38 @@ export type ScaledMeal = {
   estimatedPrice: number | null;
 };
 
+const POWDER_KEYWORDS = ["Proteinpulver", "Protein 90", "Kakaopulver", "Kakaupulver"];
+const SPREAD_KEYWORDS = ["Nuss Nougat", "Nutella", "Erdnussbutter", "Konfitüre", "Marmelade", "Pesto", "Lotus", "Biscoff", "Dessertsoße", "Apfelmus", "Honig", "Blütenhonig"];
+const LIQUID_KEYWORDS = ["Milch", "Saft", "Schlagsahne", "Kaffee", "Orangensaft"];
+
+function smartRound(rawGrams: number, food: Food): number {
+  const name = food.name;
+
+  // Stück-Produkte: auf ganze Stücke runden
+  if (food.piece_weight && food.piece_weight > 0) {
+    const pieces = Math.max(1, Math.round(rawGrams / food.piece_weight));
+    return pieces * food.piece_weight;
+  }
+
+  // Flüssigkeiten: auf nächste 50ml runden
+  if (food.unit === "ml" || LIQUID_KEYWORDS.some(k => name.includes(k))) {
+    return Math.max(50, Math.round(rawGrams / 50) * 50);
+  }
+
+  // Pulver: auf 10g runden
+  if (POWDER_KEYWORDS.some(k => name.includes(k))) {
+    return Math.max(10, Math.round(rawGrams / 10) * 10);
+  }
+
+  // Aufstriche & Soßen: auf 10g runden
+  if (SPREAD_KEYWORDS.some(k => name.includes(k))) {
+    return Math.max(10, Math.round(rawGrams / 10) * 10);
+  }
+
+  // Alles andere: auf 5g runden
+  return Math.max(5, Math.round(rawGrams / 5) * 5);
+}
+
 export function scaleRecipe(recipe: Recipe, targetKcal: number): ScaledMeal {
   const baseKcal = recipe.items.reduce((s, it) => s + (it.food.kcal * it.amount) / 100, 0);
   const scale = baseKcal > 0 ? targetKcal / baseKcal : 1;
@@ -73,7 +106,8 @@ export function scaleRecipe(recipe: Recipe, targetKcal: number): ScaledMeal {
     fat = 0;
 
   const ingredients: ScaledIngredient[] = recipe.items.map((it) => {
-    const grams = Math.round(it.amount * scale);
+    const rawGrams = it.amount * scale;
+    const grams = smartRound(rawGrams, it.food);
     const kcal = (it.food.kcal * grams) / 100;
     totalKcal += kcal;
     protein += (it.food.protein * grams) / 100;
@@ -91,9 +125,6 @@ export function scaleRecipe(recipe: Recipe, targetKcal: number): ScaledMeal {
     carbs: Math.round(carbs),
     fat: Math.round(fat),
     ingredients,
-    // Preis pro Portion braucht eine normierte Referenzmenge pro Produkt (z.B. immer "pro kg").
-    // Bis deine echte Produktliste mit einheitlichem Preisformat da ist, zeigen wir nur den
-    // Packungspreis in der Datenbank-Ansicht an, rechnen ihn aber noch nicht auf Portionen um.
     estimatedPrice: null,
   };
 }
