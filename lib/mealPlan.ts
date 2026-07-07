@@ -108,13 +108,14 @@ export function scaleRecipe(recipe: Recipe, targetKcal: number): ScaledMeal {
   const ingredients: ScaledIngredient[] = recipe.items.map((it) => {
     const rawGrams = it.amount * scale;
     const grams = smartRound(rawGrams, it.food);
-    const kcal = (it.food.kcal * grams) / 100;
-    totalKcal += kcal;
+    const kcal = Math.round((it.food.kcal * grams) / 100);
     protein += (it.food.protein * grams) / 100;
     carbs += (it.food.carbs * grams) / 100;
     fat += (it.food.fat * grams) / 100;
-    return { name: it.food.name, grams, unit: it.food.unit, kcal: Math.round(kcal) };
+    return { name: it.food.name, grams, unit: it.food.unit, kcal };
   });
+
+  totalKcal = ingredients.reduce((s, ing) => s + ing.kcal, 0);
 
   return {
     recipeId: recipe.id,
