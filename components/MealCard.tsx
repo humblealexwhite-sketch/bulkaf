@@ -107,40 +107,50 @@ export default function MealCard({
       {open && (
         <div className="pl-[38px] pb-3">
           {mealPrep && meal && (
-            <div className="text-xs mb-2 flex items-center gap-2 flex-wrap">
+            <div className="mb-2">
               {activeUntil && !expired && (
-                <span className="bg-ok/10 text-ok px-1.5 py-0.5 rounded-sm">
+                <span className="inline-block text-xs bg-ok/10 text-ok px-1.5 py-0.5 rounded-sm mb-2">
                   Aktiv bis {new Date(activeUntil).toLocaleDateString("de-DE", { day: "2-digit", month: "2-digit" })}
                 </span>
               )}
               {expired && (
-                <span className="bg-warn/10 text-warn px-1.5 py-0.5 rounded-sm">
+                <span className="inline-block text-xs bg-warn/10 text-warn px-1.5 py-0.5 rounded-sm mb-2">
                   Zeit für ein neues Rezept
                 </span>
               )}
+              <div className="flex justify-between items-center">
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setShowPicker((v) => !v);
+                  }}
+                  className="bg-accent text-white text-[11px] font-bold uppercase tracking-wide rounded-md py-1.5 px-4"
+                >
+                  Rezept Wechseln
+                </button>
+                <span className="text-muted text-xs">
+                  <b className="text-text">{meal.protein}g</b> Protein
+                </span>
+              </div>
+            </div>
+          )}
+          {!mealPrep && meal && (
+            <div className="flex justify-between items-center mb-2">
               <button
                 type="button"
                 onClick={(e) => {
                   e.stopPropagation();
                   setShowPicker((v) => !v);
                 }}
-                className="text-muted underline underline-offset-2"
+                className="bg-accent text-white text-[11px] font-bold uppercase tracking-wide rounded-md py-1.5 px-4"
               >
-                Rezept wechseln
+                Rezept Wechseln
               </button>
+              <span className="text-muted text-xs">
+                <b className="text-text">{meal.protein}g</b> Protein
+              </span>
             </div>
-          )}
-          {!mealPrep && meal && (
-            <button
-              type="button"
-              onClick={(e) => {
-                e.stopPropagation();
-                setShowPicker((v) => !v);
-              }}
-              className="text-muted text-xs underline underline-offset-2 mb-2 block"
-            >
-              Anderer Shake
-            </button>
           )}
 
           {showPicker && (
@@ -171,17 +181,6 @@ export default function MealCard({
                   </span>
                 </div>
               ))}
-              <div className="flex gap-4 text-xs text-muted mt-2">
-                <span>
-                  Protein <b className="text-text">{meal.protein}g</b>
-                </span>
-                <span>
-                  Carbs <b className="text-text">{meal.carbs}g</b>
-                </span>
-                <span>
-                  Fett <b className="text-text">{meal.fat}g</b>
-                </span>
-              </div>
             </>
           )}
         </div>
