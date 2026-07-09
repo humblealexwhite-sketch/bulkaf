@@ -105,6 +105,8 @@ export function scaleRecipe(recipe: Recipe, targetKcal: number): ScaledMeal {
     carbs = 0,
     fat = 0;
 
+  let estimatedPrice: number | null = null;
+
   const ingredients: ScaledIngredient[] = recipe.items.map((it) => {
     const rawGrams = it.amount * scale;
     const grams = smartRound(rawGrams, it.food);
@@ -112,6 +114,20 @@ export function scaleRecipe(recipe: Recipe, targetKcal: number): ScaledMeal {
     protein += (it.food.protein * grams) / 100;
     carbs += (it.food.carbs * grams) / 100;
     fat += (it.food.fat * grams) / 100;
+
+    // Preis: (Preis pro Packung / Packungsgewicht) × verwendete Menge
+    if (it.food.price != null && it.food.price_note) {
+      const totalWeightMatch = it.food.price_note.match(/(\d+(?:[.,]\d+)?)/);
+      if (totalWeightMatch) {
+        const packWeight = parseFloat(totalWeightMatch[1].replace(",", "."));
+        if (packWeight > 0) {
+          const pricePerUnit = it.food.price / packWeight;
+          const ingredientPrice = pricePerUnit * grams;
+          estimatedPrice = (estimatedPrice ?? 0) + ingredientPrice;
+        }
+      }
+    }
+
     return { name: it.food.name, grams, unit: it.food.unit, kcal };
   });
 
@@ -126,7 +142,7 @@ export function scaleRecipe(recipe: Recipe, targetKcal: number): ScaledMeal {
     carbs: Math.round(carbs),
     fat: Math.round(fat),
     ingredients,
-    estimatedPrice: null,
+    estimatedPrice,
   };
 }
 

@@ -113,7 +113,33 @@ export default async function DashboardPage() {
         />
 
         <div className="mt-7 border-t-4 border-line pt-7">
-          <div className="text-muted text-xs uppercase tracking-widest mb-3">Heutige Mahlzeiten</div>
+          {(() => {
+            const totalPrice = MEAL_SLOTS.reduce((sum, slotDef) => {
+              let recipesForSlot = allRecipes.filter((r) => r.meal_type === slotDef.key);
+              if (slotDef.key === "fruehstueck") {
+                const shakes = allRecipes.filter((r) => r.meal_type === "nachmittag");
+                recipesForSlot = [...recipesForSlot, ...shakes];
+              }
+              const plan = (activePlans ?? []).find((pl) => pl.meal_slot === slotDef.key);
+              const expired = plan ? isExpired(plan.planned_until) : false;
+              let activeRecipe: Recipe | undefined;
+              if (plan && !expired) activeRecipe = recipesForSlot.find((r) => r.id === plan.recipe_id);
+              if (!activeRecipe) activeRecipe = recipesForSlot.find((r) => r.user_id === null) ?? recipesForSlot[0];
+              const meal = activeRecipe ? scaleRecipe(activeRecipe, calorieTarget * getMealPct(profile, slotDef.key)) : null;
+              return sum + (meal?.estimatedPrice ?? 0);
+            }, 0);
+
+            return (
+              <div className="flex justify-between items-baseline mb-3">
+                <div className="text-muted text-xs uppercase tracking-widest">Heutige Mahlzeiten</div>
+                {totalPrice > 0 && (
+                  <div className="text-muted text-xs uppercase tracking-widest">
+                    ≈ {totalPrice.toLocaleString("de-DE", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}€
+                  </div>
+                )}
+              </div>
+            );
+          })()}
 
           {MEAL_SLOTS.map((slotDef, i) => {
             let recipesForSlot = allRecipes.filter((r) => r.meal_type === slotDef.key);

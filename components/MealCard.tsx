@@ -181,6 +181,11 @@ export default function MealCard({
                   </span>
                 </div>
               ))}
+              {meal.estimatedPrice != null && (
+                <div className="text-center text-muted text-sm mt-2">
+                  Durchschnittlicher Gesamtpreis* | {meal.estimatedPrice.toLocaleString("de-DE", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}€
+                </div>
+              )}
             </>
           )}
         </div>
