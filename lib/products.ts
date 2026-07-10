@@ -39,7 +39,7 @@ export type Recipe = {
 export const RECIPES: Recipe[] = [
   {
     key: "fruehstueck",
-    label: "Frühstück — Mieser Shake",
+    label: "Frühstück: Mieser Shake",
     pct: 0.28,
     items: [
       ["milch", 300],
@@ -52,7 +52,7 @@ export const RECIPES: Recipe[] = [
   },
   {
     key: "mittag",
-    label: "Mittagessen — Nudeln in Käse-Sahne-Soße mit Hack",
+    label: "Mittagessen: Nudeln in Käse-Sahne-Soße mit Hack",
     pct: 0.32,
     items: [
       ["nudeln", 120],
@@ -76,7 +76,7 @@ export const RECIPES: Recipe[] = [
   },
   {
     key: "abend",
-    label: "Abendessen — leichter",
+    label: "Abendessen, leichter",
     pct: 0.22,
     items: [
       ["haehnchen", 150],

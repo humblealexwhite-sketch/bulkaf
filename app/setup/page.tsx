@@ -188,7 +188,7 @@ export default function SetupPage() {
 
         <p className="text-muted text-[11px] mt-5 leading-relaxed">
           Kalorienbedarf wird per Mifflin-St-Jeor-Formel + Aktivitätsfaktor geschätzt, dann auf
-          deinen Zieldatum-Zuwachs hochgerechnet. Keine Diät-Tipps, keine Gesundheits-Warnungen —
+          deinen Zieldatum-Zuwachs hochgerechnet. Keine Diät-Tipps, keine Gesundheits-Warnungen,
           nur Zahlen.
         </p>
       </div>

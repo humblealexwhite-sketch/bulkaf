@@ -182,11 +182,11 @@ export default function StatsHeader({
     );
   }
 
-  const fmtPace = (v: number | null) => (v == null ? "–" : `${v >= 0 ? "+" : ""}${v.toFixed(2)}kg`);
+  const fmtPace = (v: number | null) => (v == null ? "-" : `${v >= 0 ? "+" : ""}${v.toFixed(2)}kg`);
 
   return (
     <div>
-      {/* Gewicht + Update — oben */}
+      {/* Gewicht + Update: oben */}
       <div className="text-center py-6">
         <div className="font-display text-[56px] font-bold leading-none text-shadow-soft">
           {latestWeight.toFixed(1)}
@@ -275,7 +275,7 @@ export default function StatsHeader({
               ← Früher
             </button>
             <span className="text-muted text-[11px]">
-              {new Date(windowRange.from).getFullYear()}–{new Date(windowRange.to).getFullYear()}
+              {new Date(windowRange.from).getFullYear()} - {new Date(windowRange.to).getFullYear()}
             </span>
             <button
               type="button"

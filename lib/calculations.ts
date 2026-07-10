@@ -43,7 +43,7 @@ export function calcDailyTarget(p: Profile) {
 }
 
 export function calcProteinTarget(currentWeightKg: number): number {
-  // ~2g Protein pro kg Körpergewicht — Standard-Richtwert für Muskelaufbau/Bulk
+  // ~2g Protein pro kg Körpergewicht, Standard-Richtwert für Muskelaufbau/Bulk
   return Math.round(currentWeightKg * 2);
 }
 

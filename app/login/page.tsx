@@ -54,7 +54,7 @@ export default function LoginPage() {
         </p>
       </div>
 
-      {/* Eingabefelder — untereinander, umrandet statt gefüllt */}
+      {/* Eingabefelder: untereinander, umrandet statt gefüllt */}
       <form onSubmit={handleSubmit} className="px-6 mt-8">
         <div className="max-w-sm mx-auto space-y-3">
           <input
@@ -79,7 +79,7 @@ export default function LoginPage() {
           {info && <p className="text-ok text-xs text-center">{info}</p>}
         </div>
 
-        {/* Bulle — bricht bewusst aus der schmalen Spalte aus, volle Bildschirmbreite */}
+        {/* Bulle: bricht bewusst aus der schmalen Spalte aus, volle Bildschirmbreite */}
         <div className="relative left-1/2 right-1/2 -mx-[50vw] w-screen -my-6 pointer-events-none">
           <img
             src="/login-bull.png"

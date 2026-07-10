@@ -165,7 +165,7 @@ export default function ProfileForm({
       </div>
 
       <p className="text-muted text-[11px] -mt-2">
-        Kalorienziel ist mit dem berechneten Wert ({Math.round(calculatedTarget)} kcal) vorausgefüllt — du kannst es oben jederzeit manuell überschreiben.
+        Kalorienziel ist mit dem berechneten Wert ({Math.round(calculatedTarget)} kcal) vorausgefüllt, du kannst es oben jederzeit manuell überschreiben.
       </p>
 
       <div className="border-t border-line pt-5">
@@ -213,7 +213,7 @@ export default function ProfileForm({
 
       <div className="border-t border-line pt-5">
         <div className="text-xs text-muted uppercase tracking-wide mb-4">
-          Mahlzeiten-Gewichtung — wie viel % der Tageskalorien pro Mahlzeit
+          Mahlzeiten-Gewichtung: wie viel % der Tageskalorien pro Mahlzeit
         </div>
         <MealWeightSliders initial={pct} onChange={setPct} />
       </div>

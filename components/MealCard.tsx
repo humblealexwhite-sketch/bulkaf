@@ -169,7 +169,7 @@ export default function MealCard({
           )}
 
           {!meal ? (
-            <p className="text-muted text-sm">Kein Rezept vorhanden — leg eins an unter "Rezepte verwalten".</p>
+            <p className="text-muted text-sm">Kein Rezept vorhanden, leg eins an unter "Rezepte verwalten".</p>
           ) : (
             <>
               {meal.ingredients.map((ing, i) => (
