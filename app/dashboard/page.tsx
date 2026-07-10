@@ -2,10 +2,13 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { calcDailyTarget, calcProteinTarget, Profile } from "@/lib/calculations";
 import { MEAL_SLOTS, MealSlot, Recipe, getMealPct, isExpired, scaleRecipe } from "@/lib/mealPlan";
+import { computeStreak, fullyLoggedDatesFromLog } from "@/lib/streak";
 import NutritionCard from "@/components/NutritionCard";
 import StatsHeader from "@/components/StatsHeader";
 import MealCard from "@/components/MealCard";
 import SideMenu from "@/components/SideMenu";
+import StreakBadge from "@/components/StreakBadge";
+import ExtraLog from "@/components/ExtraLog";
 
 export default async function DashboardPage() {
   const supabase = createClient();
@@ -79,9 +82,28 @@ export default async function DashboardPage() {
     .eq("user_id", user.id)
     .eq("log_date", today);
 
+  const { data: todaysExtras } = await supabase
+    .from("extra_log")
+    .select("id, label, kcal, protein")
+    .eq("user_id", user.id)
+    .eq("log_date", today)
+    .order("created_at", { ascending: true });
+
+  const ninetyDaysAgo = new Date();
+  ninetyDaysAgo.setDate(ninetyDaysAgo.getDate() - 90);
+  const { data: recentMealLog } = await supabase
+    .from("meal_log")
+    .select("log_date, meal_slot")
+    .eq("user_id", user.id)
+    .gte("log_date", ninetyDaysAgo.toISOString().slice(0, 10));
+
   const eatenSlots = new Set((todaysLog ?? []).map((l) => l.meal_slot));
-  const eatenKcal = (todaysLog ?? []).reduce((s, l) => s + Number(l.kcal), 0);
-  const eatenProtein = (todaysLog ?? []).reduce((s, l) => s + Number(l.protein ?? 0), 0);
+  const extraKcal = (todaysExtras ?? []).reduce((s, e) => s + Number(e.kcal), 0);
+  const extraProtein = (todaysExtras ?? []).reduce((s, e) => s + Number(e.protein ?? 0), 0);
+  const eatenKcal = (todaysLog ?? []).reduce((s, l) => s + Number(l.kcal), 0) + extraKcal;
+  const eatenProtein = (todaysLog ?? []).reduce((s, l) => s + Number(l.protein ?? 0), 0) + extraProtein;
+
+  const streak = computeStreak(fullyLoggedDatesFromLog(recentMealLog ?? [], MEAL_SLOTS.length));
 
   return (
     <div className="min-h-screen bg-bg">
@@ -93,6 +115,8 @@ export default async function DashboardPage() {
 
       <div className="px-6 -mt-24 relative z-10 pb-8">
       <div className="max-w-md mx-auto">
+        <StreakBadge days={streak} />
+
         <NutritionCard
           calorieTarget={calorieTarget}
           calorieEaten={eatenKcal}
@@ -177,6 +201,8 @@ export default async function DashboardPage() {
             );
           })}
         </div>
+
+        <ExtraLog entries={(todaysExtras ?? []).map((e) => ({ id: e.id, label: e.label, kcal: Number(e.kcal), protein: Number(e.protein ?? 0) }))} />
 
         <div className="h-4" />
       </div>
