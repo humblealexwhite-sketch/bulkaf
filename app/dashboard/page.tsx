@@ -8,7 +8,7 @@ import StatsHeader from "@/components/StatsHeader";
 import MealCard from "@/components/MealCard";
 import SideMenu from "@/components/SideMenu";
 import StreakBadge from "@/components/StreakBadge";
-import ExtraLog from "@/components/ExtraLog";
+import SnackLog from "@/components/SnackLog";
 
 export default async function DashboardPage() {
   const supabase = createClient();
@@ -82,9 +82,15 @@ export default async function DashboardPage() {
     .eq("user_id", user.id)
     .eq("log_date", today);
 
-  const { data: todaysExtras } = await supabase
-    .from("extra_log")
-    .select("id, label, kcal, protein")
+  const { data: snackFoods } = await supabase
+    .from("foods")
+    .select("id, name, unit, kcal, protein")
+    .or(`user_id.is.null,user_id.eq.${user.id}`)
+    .order("name", { ascending: true });
+
+  const { data: todaysSnacks } = await supabase
+    .from("snack_log")
+    .select("id, grams, foods(name, unit, kcal, protein)")
     .eq("user_id", user.id)
     .eq("log_date", today)
     .order("created_at", { ascending: true });
@@ -97,11 +103,18 @@ export default async function DashboardPage() {
     .eq("user_id", user.id)
     .gte("log_date", ninetyDaysAgo.toISOString().slice(0, 10));
 
+  const snackEntries = (todaysSnacks ?? []).map((s: any) => {
+    const food = s.foods;
+    const kcal = Math.round((food.kcal * s.grams) / 100);
+    const protein = Math.round((food.protein * s.grams) / 100);
+    return { id: s.id, foodName: food.name, grams: s.grams, unit: food.unit, kcal, protein };
+  });
+
   const eatenSlots = new Set((todaysLog ?? []).map((l) => l.meal_slot));
-  const extraKcal = (todaysExtras ?? []).reduce((s, e) => s + Number(e.kcal), 0);
-  const extraProtein = (todaysExtras ?? []).reduce((s, e) => s + Number(e.protein ?? 0), 0);
-  const eatenKcal = (todaysLog ?? []).reduce((s, l) => s + Number(l.kcal), 0) + extraKcal;
-  const eatenProtein = (todaysLog ?? []).reduce((s, l) => s + Number(l.protein ?? 0), 0) + extraProtein;
+  const snackKcal = snackEntries.reduce((s, e) => s + e.kcal, 0);
+  const snackProtein = snackEntries.reduce((s, e) => s + e.protein, 0);
+  const eatenKcal = (todaysLog ?? []).reduce((s, l) => s + Number(l.kcal), 0) + snackKcal;
+  const eatenProtein = (todaysLog ?? []).reduce((s, l) => s + Number(l.protein ?? 0), 0) + snackProtein;
 
   const streak = computeStreak(fullyLoggedDatesFromLog(recentMealLog ?? [], MEAL_SLOTS.length));
 
@@ -202,7 +215,7 @@ export default async function DashboardPage() {
           })}
         </div>
 
-        <ExtraLog entries={(todaysExtras ?? []).map((e) => ({ id: e.id, label: e.label, kcal: Number(e.kcal), protein: Number(e.protein ?? 0) }))} />
+        <SnackLog entries={snackEntries} foods={snackFoods ?? []} />
 
         <div className="h-4" />
       </div>
